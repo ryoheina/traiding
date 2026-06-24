@@ -69,27 +69,35 @@ export async function POST(request: NextRequest) {
       ]
     );
 
-    // Create notification for admin
-    await query(
-      `INSERT INTO notifications (user_id, title, message, type)
-       VALUES (
-         (SELECT id FROM users WHERE email = $1),
-         $2, $3, $4
-       )`,
-      [
-        process.env.ADMIN_EMAIL,
-        'New Registration',
-        `New user registration: ${user.email} (${user.full_name})`,
-        'info'
-      ]
-    );
+    // Create notification for admin (optional - don't fail if this doesn't work)
+    try {
+      await query(
+        `INSERT INTO notifications (user_id, title, message, type)
+         VALUES (
+           (SELECT id FROM users WHERE email = $1),
+           $2, $3, $4
+         )`,
+        [
+          process.env.ADMIN_EMAIL,
+          'New Registration',
+          `New user registration: ${user.email} (${user.full_name})`,
+          'info'
+        ]
+      );
+    } catch (notificationError) {
+      console.error('Failed to create notification:', notificationError);
+    }
 
-    // Send email notification to admin
-    await sendNewRegistrationNotification(
-      process.env.ADMIN_EMAIL || '',
-      user.email,
-      user.full_name
-    );
+    // Send email notification to admin (optional - don't fail if this doesn't work)
+    try {
+      await sendNewRegistrationNotification(
+        process.env.ADMIN_EMAIL || '',
+        user.email,
+        user.full_name
+      );
+    } catch (emailError) {
+      console.error('Failed to send email notification:', emailError);
+    }
 
     return NextResponse.json({
       success: true,
