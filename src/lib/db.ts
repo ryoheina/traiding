@@ -1,6 +1,20 @@
 import { Pool } from 'pg';
 
-console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
+console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL);
+
+if (process.env.DATABASE_URL) {
+  try {
+    const dbUrl = new URL(process.env.DATABASE_URL);
+    console.log('DATABASE_URL host:', dbUrl.hostname);
+    console.log('DATABASE_URL port:', dbUrl.port);
+    console.log('DATABASE_URL database:', dbUrl.pathname.replace('/', ''));
+  } catch (e) {
+    console.log('DATABASE_URL parse error:', e);
+  }
+} else {
+  console.log('DATABASE_URL host: undefined');
+}
+
 console.log('NODE_ENV:', process.env.NODE_ENV);
 
 if (!process.env.DATABASE_URL) {
