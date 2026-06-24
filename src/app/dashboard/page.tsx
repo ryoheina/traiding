@@ -150,7 +150,7 @@ export default function MemberDashboard() {
                     Welcome Back!
                   </h2>
                   <p className="text-wolf-600 dark:text-wolf-400 mb-6">
-                    Here's what's happening with your trading journey.
+                    Here&apos;s what&apos;s happening with your trading journey.
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
