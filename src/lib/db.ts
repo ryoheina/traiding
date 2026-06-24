@@ -18,7 +18,8 @@ if (process.env.DATABASE_URL) {
 console.log('NODE_ENV:', process.env.NODE_ENV);
 
 if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL environment variable is not set');
+  console.error('FATAL: DATABASE_URL is undefined');
+  process.exit(1);
 }
 
 const pool = new Pool({
