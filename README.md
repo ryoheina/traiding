@@ -179,7 +179,18 @@ wolf-trading/
 
 ## Deployment
 
-### Vercel (Recommended)
+### Railway (Recommended)
+
+See [RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md) for detailed deployment instructions.
+
+Quick deployment:
+1. Push code to GitHub
+2. Create new project on Railway from GitHub repo
+3. Add PostgreSQL service
+4. Configure environment variables
+5. Deploy
+
+### Vercel
 
 1. Push your code to GitHub
 2. Import project in Vercel
