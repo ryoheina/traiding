@@ -5,7 +5,7 @@ export function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
   
   // Only allow these paths
-  const allowedPaths = ['/', '/register', '/login', '/forgot-password', '/admin', '/register/success'];
+  const allowedPaths = ['/', '/register', '/login', '/forgot-password', '/admin', '/register/success', '/team'];
   
   // Check if path is allowed
   const isAllowedPath = allowedPaths.some(allowedPath => 
