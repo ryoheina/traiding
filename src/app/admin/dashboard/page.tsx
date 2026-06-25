@@ -240,21 +240,33 @@ export default function AdminDashboard() {
       let imageUrl = projectFormData.image_url;
       let rarUrl = projectFormData.rar_file_url;
 
+      console.log('[PROJECT] Starting project submission');
+      console.log('[PROJECT] Form data:', projectFormData);
+
       // Handle image upload if file provided
       const imageInput = document.getElementById('project-image-file') as HTMLInputElement;
+      console.log('[PROJECT] Image input:', imageInput);
+      console.log('[PROJECT] Image files:', imageInput?.files);
+      
       if (imageInput?.files?.[0]) {
+        console.log('[PROJECT] Uploading image:', imageInput.files[0].name, imageInput.files[0].size);
         setUploadingImage(true);
         const formData = new FormData();
         formData.append('file', imageInput.files[0]);
         formData.append('type', 'image');
+        
+        console.log('[PROJECT] Sending upload request to /api/upload');
         const uploadResponse = await fetch('/api/upload', {
           method: 'POST',
           body: formData,
         });
+        
+        console.log('[PROJECT] Upload response status:', uploadResponse.status);
+        
         if (uploadResponse.ok) {
           const uploadData = await uploadResponse.json();
           imageUrl = uploadData.fileUrl;
-          console.log('[PROJECT] Image uploaded:', uploadData);
+          console.log('[PROJECT] Image uploaded successfully:', uploadData);
         } else {
           const errorData = await uploadResponse.json();
           console.error('[PROJECT] Image upload failed:', errorData);
@@ -265,19 +277,28 @@ export default function AdminDashboard() {
 
       // Handle RAR upload if file provided
       const rarInput = document.getElementById('project-rar-file') as HTMLInputElement;
+      console.log('[PROJECT] RAR input:', rarInput);
+      console.log('[PROJECT] RAR files:', rarInput?.files);
+      
       if (rarInput?.files?.[0]) {
+        console.log('[PROJECT] Uploading RAR:', rarInput.files[0].name, rarInput.files[0].size);
         setUploadingRar(true);
         const formData = new FormData();
         formData.append('file', rarInput.files[0]);
         formData.append('type', 'rar');
+        
+        console.log('[PROJECT] Sending RAR upload request to /api/upload');
         const uploadResponse = await fetch('/api/upload', {
           method: 'POST',
           body: formData,
         });
+        
+        console.log('[PROJECT] RAR upload response status:', uploadResponse.status);
+        
         if (uploadResponse.ok) {
           const uploadData = await uploadResponse.json();
           rarUrl = uploadData.fileUrl;
-          console.log('[PROJECT] RAR uploaded:', uploadData);
+          console.log('[PROJECT] RAR uploaded successfully:', uploadData);
         } else {
           const errorData = await uploadResponse.json();
           console.error('[PROJECT] RAR upload failed:', errorData);
