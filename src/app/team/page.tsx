@@ -48,41 +48,49 @@ export default function TeamPage() {
     checkUserAccess();
   }, []);
 
-  const checkUserAccess = async () => {
-    try {
-      console.log('[TEAM-PAGE] Checking user access');
-      // Check if user is logged in and approved
-      const response = await fetch('/api/auth/session');
-      console.log('[TEAM-PAGE] Session response status:', response.status);
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log('[TEAM-PAGE] Session data:', data);
+  const checkUserAccess = () => {
+    console.log('[TEAM-PAGE] Checking user access');
+    
+    // Read user session from cookie
+    const getCookie = (name: string) => {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()?.split(';').shift();
+      return null;
+    };
+    
+    const userSession = getCookie('user_session');
+    console.log('[TEAM-PAGE] User session cookie:', userSession);
+    
+    if (userSession) {
+      try {
+        const userData = JSON.parse(userSession);
+        console.log('[TEAM-PAGE] User data:', userData);
         
-        if (data.user && data.user.approval_status === 'approved') {
+        if (userData.approvalStatus === 'approved') {
           console.log('[TEAM-PAGE] User approved, granting access');
           setIsAuthenticated(true);
           setUserStatus('approved');
-          // Check if admin (you can customize this logic)
-          if (data.user.email === 'aivideo7775@gmail.com') {
+          
+          if (userData.email === 'aivideo7775@gmail.com') {
             console.log('[TEAM-PAGE] User is admin');
             setIsAdmin(true);
           }
           fetchProjects();
         } else {
-          console.log('[TEAM-PAGE] User not approved or no user:', data.user?.approval_status);
-          setUserStatus(data.user?.approval_status || 'not_logged_in');
+          console.log('[TEAM-PAGE] User not approved:', userData.approvalStatus);
+          setUserStatus(userData.approvalStatus);
         }
-      } else {
-        console.log('[TEAM-PAGE] Session check failed');
-        setUserStatus('not_logged_in');
+      } catch (error) {
+        console.error('[TEAM-PAGE] Failed to parse user session:', error);
+        setUserStatus('error');
       }
-    } catch (error) {
-      console.error('[TEAM-PAGE] Failed to check user access:', error);
-      setUserStatus('error');
-    } finally {
-      setLoading(false);
+    } else {
+      console.log('[TEAM-PAGE] No user session cookie found');
+      setUserStatus('not_logged_in');
     }
+    
+    setLoading(false);
   };
 
   const fetchProjects = async () => {

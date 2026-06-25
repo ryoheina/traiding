@@ -123,6 +123,17 @@ export async function POST(request: NextRequest) {
       maxAge: 60 * 60 * 24 * 7 // 7 days
     });
     
+    // Also set non-httpOnly cookie for client-side access
+    response.cookies.set('user_session', JSON.stringify({ 
+      userId: user.id, 
+      email: user.email,
+      approvalStatus: user.approval_status 
+    }), {
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7 // 7 days
+    });
+    
     return response;
 
   } catch (error: any) {
