@@ -50,9 +50,9 @@ export async function POST(request: NextRequest) {
       throw new Error('File was not written successfully');
     }
     
-    // Return public URL - use absolute URL from request
+    // Return public URL - use API route for serving files
     const baseUrl = request.nextUrl.origin;
-    const fileUrl = `${baseUrl}/uploads/${type}/${filename}`;
+    const fileUrl = `${baseUrl}/api/uploads/${type}/${filename}`;
     
     console.log('[UPLOAD] File uploaded successfully:', { filename, type, fileUrl, filepath, baseUrl });
     
