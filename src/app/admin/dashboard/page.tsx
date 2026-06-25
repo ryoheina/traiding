@@ -71,16 +71,23 @@ export default function AdminDashboard() {
 
   const fetchUsers = async () => {
     try {
+      console.log('[ADMIN-DASHBOARD] Fetching users from /api/admin/users');
       const response = await fetch("/api/admin/users");
       const data = await response.json();
+      
+      console.log('[ADMIN-DASHBOARD] Response status:', response.status);
+      console.log('[ADMIN-DASHBOARD] Response data:', data);
       
       if (response.ok) {
         setUsers(data.users);
         setFilteredUsers(data.users);
         setStats(data.stats);
+        console.log('[ADMIN-DASHBOARD] Users loaded successfully:', data.users.length);
+      } else {
+        console.error('[ADMIN-DASHBOARD] Failed to fetch users:', data.error);
       }
     } catch (error) {
-      console.error("Failed to fetch users:", error);
+      console.error("[ADMIN-DASHBOARD] Failed to fetch users:", error);
     } finally {
       setLoading(false);
     }
@@ -88,14 +95,21 @@ export default function AdminDashboard() {
 
   const handleApproval = async (userId: number, action: "approve" | "reject" | "suspend") => {
     try {
+      console.log('[ADMIN-DASHBOARD] Sending approval request:', userId, action);
       const response = await fetch(`/api/admin/users/${userId}/approve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),
       });
 
+      console.log('[ADMIN-DASHBOARD] Approval response status:', response.status);
+      const data = await response.json();
+      console.log('[ADMIN-DASHBOARD] Approval response data:', data);
+
       if (response.ok) {
         fetchUsers();
+      } else {
+        console.error('[ADMIN-DASHBOARD] Approval failed:', data.error);
       }
     } catch (error) {
       console.error("Failed to update user status:", error);
