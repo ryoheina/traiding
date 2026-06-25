@@ -38,9 +38,12 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     console.log('[PROJECTS] Creating new project');
+    console.log('[PROJECTS] Cookies:', request.cookies.getAll());
     
     // Check admin authorization
     const sessionCookie = request.cookies.get('session');
+    console.log('[PROJECTS] Session cookie:', sessionCookie ? sessionCookie.value : 'not found');
+    
     if (!sessionCookie) {
       console.log('[PROJECTS] No session cookie found');
       return NextResponse.json(
@@ -49,7 +52,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const sessionData = JSON.parse(sessionCookie.value);
+    let sessionData;
+    try {
+      sessionData = JSON.parse(sessionCookie.value);
+      console.log('[PROJECTS] Session data parsed:', sessionData);
+    } catch (error) {
+      console.log('[PROJECTS] Failed to parse session cookie:', error);
+      return NextResponse.json(
+        { error: 'Unauthorized - Invalid session format' },
+        { status: 401 }
+      );
+    }
+    
     if (!sessionData.userId) {
       console.log('[PROJECTS] No userId in session');
       return NextResponse.json(
@@ -59,6 +73,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch user to check if admin
+    console.log('[PROJECTS] Fetching user with userId:', sessionData.userId);
     const userResult = await query(
       'SELECT email FROM users WHERE id = $1',
       [sessionData.userId]
@@ -73,6 +88,8 @@ export async function POST(request: NextRequest) {
     }
 
     const user = userResult.rows[0];
+    console.log('[PROJECTS] User found:', user.email);
+    
     if (user.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
       console.log('[PROJECTS] User is not admin:', user.email);
       return NextResponse.json(
@@ -113,6 +130,7 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error: any) {
     console.error('[PROJECTS] Failed to create project:', error.message);
+    console.error('[PROJECTS] Error stack:', error.stack);
     return NextResponse.json(
       { error: 'Failed to create project', details: error.message },
       { status: 500 }
