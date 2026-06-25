@@ -52,17 +52,26 @@ export default function AdminDashboard() {
   const [deletingUserId, setDeletingUserId] = useState<number | null>(null);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<{ userId: number; userName: string } | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
 
   useEffect(() => {
-    fetchUsers();
-    
-    // Poll for new users every 5 seconds
-    const interval = setInterval(() => {
+    // Only fetch users if authenticated
+    if (isAuthenticated) {
       fetchUsers();
-    }, 5000);
-    
-    return () => clearInterval(interval);
-  }, []);
+      
+      // Poll for new users every 5 seconds
+      const interval = setInterval(() => {
+        fetchUsers();
+      }, 5000);
+      
+      return () => clearInterval(interval);
+    } else {
+      setLoading(false);
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     let filtered = users;
@@ -180,6 +189,25 @@ export default function AdminDashboard() {
     }
   };
 
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsVerifying(true);
+    setPasswordError('');
+
+    // Simple password verification - in production, use proper authentication
+    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+
+    if (password === ADMIN_PASSWORD) {
+      setIsAuthenticated(true);
+      setPassword('');
+    } else {
+      setPasswordError('Incorrect password');
+      setPassword('');
+    }
+
+    setIsVerifying(false);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "approved":
@@ -199,6 +227,65 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen bg-wolf-50 dark:bg-wolf-950 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold-500" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-wolf-50 via-white to-wolf-100 dark:from-wolf-950 dark:via-wolf-900 dark:to-wolf-950 flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white dark:bg-wolf-800 rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4"
+        >
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-gradient-to-br from-gold-500 to-gold-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Shield className="w-8 h-8 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-wolf-900 dark:text-white mb-2">Admin Access</h1>
+            <p className="text-wolf-600 dark:text-wolf-400">Enter password to access admin dashboard</p>
+          </div>
+
+          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-wolf-700 dark:text-wolf-300 mb-2">
+                Password
+              </label>
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 border border-wolf-300 dark:border-wolf-700 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-transparent bg-white dark:bg-wolf-900 text-wolf-900 dark:text-white"
+                placeholder="Enter admin password"
+                disabled={isVerifying}
+              />
+              {passwordError && (
+                <p className="mt-2 text-sm text-red-600 dark:text-red-400">{passwordError}</p>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={isVerifying || !password}
+              className="w-full py-3 px-4 bg-gradient-to-r from-gold-500 to-gold-600 text-white font-semibold rounded-lg hover:from-gold-600 hover:to-gold-700 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              {isVerifying ? (
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
+                  <span>Verifying...</span>
+                </div>
+              ) : (
+                'Access Dashboard'
+              )}
+            </button>
+          </form>
+
+          <p className="mt-6 text-center text-sm text-wolf-500 dark:text-wolf-400">
+            Default password: admin123
+          </p>
+        </motion.div>
       </div>
     );
   }
