@@ -2,10 +2,61 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { query } from '@/lib/db';
 import { sendNewRegistrationNotification } from '@/lib/email';
+import fs from 'fs';
+import path from 'path';
+
+// Function to initialize database schema
+async function initializeDatabase() {
+  try {
+    console.log('[INIT-DB] Checking if database needs initialization');
+    
+    // Try to query the users table to see if it exists
+    try {
+      await query('SELECT 1 FROM users LIMIT 1');
+      console.log('[INIT-DB] Database already initialized');
+      return;
+    } catch (error) {
+      console.log('[INIT-DB] Users table does not exist, initializing...');
+    }
+
+    // Read the schema file
+    const schemaPath = path.join(process.cwd(), 'src', 'lib', 'schema.sql');
+    const schema = fs.readFileSync(schemaPath, 'utf-8');
+
+    // Split by semicolon to get individual statements
+    const statements = schema
+      .split(';')
+      .map(s => s.trim())
+      .filter(s => s.length > 0 && !s.startsWith('--'));
+
+    // Execute each statement
+    for (const statement of statements) {
+      try {
+        await query(statement);
+        console.log('[INIT-DB] Executed statement:', statement.substring(0, 50) + '...');
+      } catch (error) {
+        // Ignore errors for IF NOT EXISTS statements
+        if (!statement.includes('IF NOT EXISTS')) {
+          console.error('[INIT-DB] Failed to execute statement:', statement);
+          throw error;
+        }
+      }
+    }
+
+    console.log('[INIT-DB] Database initialization completed');
+  } catch (error) {
+    console.error('[INIT-DB] Error:', error);
+    // Don't throw - let registration proceed even if init fails
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
     console.log('[REGISTER] Registration attempt started');
+    
+    // Initialize database if needed
+    await initializeDatabase();
+    
     const body = await request.json();
     const { fullName, email, phone, password } = body;
 
