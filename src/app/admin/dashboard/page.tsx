@@ -71,23 +71,25 @@ export default function AdminDashboard() {
 
   const fetchUsers = async () => {
     try {
-      console.log('[ADMIN-DASHBOARD] Fetching users from /api/admin/users');
-      const response = await fetch("/api/admin/users");
+      console.log('[FETCH-USERS] Fetching users from /api/admin/users');
+      const response = await fetch("/api/admin/users", { cache: 'no-store' });
       const data = await response.json();
       
-      console.log('[ADMIN-DASHBOARD] Response status:', response.status);
-      console.log('[ADMIN-DASHBOARD] Response data:', data);
+      console.log('[FETCH-USERS] Response status:', response.status);
+      console.log('[FETCH-USERS] Response data users:', data.users);
+      console.log('[FETCH-USERS] State before update:', users.map((u: User) => ({ id: u.id, status: u.approval_status })));
       
       if (response.ok) {
+        console.log('[FETCH-USERS] Updating state with new users:', data.users.map((u: User) => ({ id: u.id, status: u.approval_status })));
         setUsers(data.users);
         setFilteredUsers(data.users);
         setStats(data.stats);
-        console.log('[ADMIN-DASHBOARD] Users loaded successfully:', data.users.length);
+        console.log('[FETCH-USERS] State updated successfully');
       } else {
-        console.error('[ADMIN-DASHBOARD] Failed to fetch users:', data.error);
+        console.error('[FETCH-USERS] Failed to fetch users:', data.error);
       }
     } catch (error) {
-      console.error("[ADMIN-DASHBOARD] Failed to fetch users:", error);
+      console.error("[FETCH-USERS] Failed to fetch users:", error);
     } finally {
       setLoading(false);
     }
@@ -95,24 +97,26 @@ export default function AdminDashboard() {
 
   const handleApproval = async (userId: number, action: "approve" | "reject" | "suspend") => {
     try {
-      console.log('[ADMIN-DASHBOARD] Sending approval request:', userId, action);
+      console.log('[APPROVAL] Request sent:', { userId, action });
       const response = await fetch(`/api/admin/users/${userId}/approve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),
       });
 
-      console.log('[ADMIN-DASHBOARD] Approval response status:', response.status);
+      console.log('[APPROVAL] Response status:', response.status);
       const data = await response.json();
-      console.log('[ADMIN-DASHBOARD] Approval response data:', data);
+      console.log('[APPROVAL] Response data:', data);
 
       if (response.ok) {
-        fetchUsers();
+        console.log('[APPROVAL] Approval successful, calling fetchUsers()');
+        await fetchUsers();
+        console.log('[APPROVAL] fetchUsers() completed');
       } else {
-        console.error('[ADMIN-DASHBOARD] Approval failed:', data.error);
+        console.error('[APPROVAL] Approval failed:', data.error);
       }
     } catch (error) {
-      console.error("Failed to update user status:", error);
+      console.error("[APPROVAL] Failed to update user status:", error);
     }
   };
 
@@ -287,77 +291,80 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-wolf-200 dark:divide-wolf-800">
-                {filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-wolf-50 dark:hover:bg-wolf-800/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-gold-500 to-gold-600 rounded-full flex items-center justify-center text-white font-semibold">
-                          {user.full_name.charAt(0)}
+                {filteredUsers.map((user) => {
+                  console.log('[RENDER] Rendering user:', { id: user.id, status: user.approval_status });
+                  return (
+                    <tr key={user.id} className="hover:bg-wolf-50 dark:hover:bg-wolf-800/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-gradient-to-br from-gold-500 to-gold-600 rounded-full flex items-center justify-center text-white font-semibold">
+                            {user.full_name.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-wolf-900 dark:text-white">{user.full_name}</p>
+                            <p className="text-sm text-wolf-500 dark:text-wolf-400">ID: {user.id}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-semibold text-wolf-900 dark:text-white">{user.full_name}</p>
-                          <p className="text-sm text-wolf-500 dark:text-wolf-400">ID: {user.id}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <p className="text-wolf-900 dark:text-white">{user.email}</p>
-                      <p className="text-sm text-wolf-500 dark:text-wolf-400">{user.phone}</p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(user.approval_status)}`}>
-                        {user.approval_status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-wolf-600 dark:text-wolf-400">
-                      {new Date(user.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-wolf-600 dark:text-wolf-400">
-                      <p>{user.device_info?.type || "Unknown"}</p>
-                      <p className="text-xs">{user.ip_address || "Unknown"}</p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-end space-x-2">
-                        {user.approval_status === "pending" && (
-                          <>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-wolf-900 dark:text-white">{user.email}</p>
+                        <p className="text-sm text-wolf-500 dark:text-wolf-400">{user.phone}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(user.approval_status)}`}>
+                          {user.approval_status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-wolf-600 dark:text-wolf-400">
+                        {new Date(user.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-wolf-600 dark:text-wolf-400">
+                        <p>{user.device_info?.type || "Unknown"}</p>
+                        <p className="text-xs">{user.ip_address || "Unknown"}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-end space-x-2">
+                          {user.approval_status === "pending" && (
+                            <>
+                              <button
+                                onClick={() => handleApproval(user.id, "approve")}
+                                className="p-2 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg transition-colors"
+                                title="Approve"
+                              >
+                                <Check className="w-5 h-5" />
+                              </button>
+                              <button
+                                onClick={() => handleApproval(user.id, "reject")}
+                                className="p-2 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                                title="Reject"
+                              >
+                                <X className="w-5 h-5" />
+                              </button>
+                            </>
+                          )}
+                          {user.approval_status === "approved" && (
+                            <button
+                              onClick={() => handleApproval(user.id, "suspend")}
+                              className="p-2 text-purple-600 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-lg transition-colors"
+                              title="Suspend"
+                            >
+                              <Shield className="w-5 h-5" />
+                            </button>
+                          )}
+                          {user.approval_status === "suspended" && (
                             <button
                               onClick={() => handleApproval(user.id, "approve")}
                               className="p-2 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg transition-colors"
-                              title="Approve"
+                              title="Reactivate"
                             >
-                              <Check className="w-5 h-5" />
+                              <UserCheck className="w-5 h-5" />
                             </button>
-                            <button
-                              onClick={() => handleApproval(user.id, "reject")}
-                              className="p-2 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                              title="Reject"
-                            >
-                              <X className="w-5 h-5" />
-                            </button>
-                          </>
-                        )}
-                        {user.approval_status === "approved" && (
-                          <button
-                            onClick={() => handleApproval(user.id, "suspend")}
-                            className="p-2 text-purple-600 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-lg transition-colors"
-                            title="Suspend"
-                          >
-                            <Shield className="w-5 h-5" />
-                          </button>
-                        )}
-                        {user.approval_status === "suspended" && (
-                          <button
-                            onClick={() => handleApproval(user.id, "approve")}
-                            className="p-2 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg transition-colors"
-                            title="Reactivate"
-                          >
-                            <UserCheck className="w-5 h-5" />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
