@@ -81,7 +81,8 @@ export default function AdminDashboard() {
   const fetchUsers = async () => {
     try {
       console.log('[FETCH-USERS] Fetching users from /api/admin/users');
-      const response = await fetch("/api/admin/users", { cache: 'no-store' });
+      const cacheBuster = Date.now();
+      const response = await fetch(`/api/admin/users?_t=${cacheBuster}`, { cache: 'no-store' });
       const data = await response.json();
       
       console.log('[FETCH-USERS] Response status:', response.status);
