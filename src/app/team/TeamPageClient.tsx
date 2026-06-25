@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
-  Download, 
   Plus, 
   Edit, 
   Trash2, 
@@ -165,24 +164,6 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
     }
   };
 
-  const handleDownload = async (rarUrl: string) => {
-    try {
-      const response = await fetch(`/api/download${rarUrl}`);
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = rarUrl.split('/').pop() || 'project.rar';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-      }
-    } catch (error) {
-      setNotification({ type: 'error', message: 'Failed to download file' });
-    }
-  };
 
   if (loading) {
     return (
@@ -257,10 +238,7 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
                   animate={{ opacity: 1, y: 0 }}
                   className="bg-white/10 backdrop-blur-lg rounded-xl overflow-hidden border border-white/20 hover:border-white/40 transition-all group"
                 >
-                  <div 
-                    className="relative h-48 bg-gradient-to-br from-blue-400 to-blue-600 cursor-pointer"
-                    onClick={() => project.rar_file_url && handleDownload(project.rar_file_url)}
-                  >
+                  <div className="relative h-48 bg-gradient-to-br from-blue-400 to-blue-600">
                     {project.image_url ? (
                       <img
                         src={project.image_url}
@@ -272,9 +250,6 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
                         <ImageIcon className="w-16 h-16 text-white/50" />
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <Download className="w-12 h-12 text-white" />
-                    </div>
                     {isAdmin && (
                       <div className="absolute top-2 right-2 flex space-x-2">
                         <button
@@ -308,15 +283,6 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
                   <div className="p-4">
                     <h3 className="text-lg font-semibold text-white mb-2">{project.title}</h3>
                     <p className="text-blue-200 text-sm line-clamp-2">{project.description}</p>
-                    {project.rar_file_url && (
-                      <button
-                        onClick={() => handleDownload(project.rar_file_url)}
-                        className="mt-4 w-full flex items-center justify-center space-x-2 px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-colors"
-                      >
-                        <Download className="w-4 h-4" />
-                        <span>Download RAR</span>
-                      </button>
-                    )}
                   </div>
                 </motion.div>
               ))}

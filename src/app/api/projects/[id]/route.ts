@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { ensureProjectsTable } from '@/lib/migrate-projects';
 
 const ADMIN_EMAIL = 'aivideo7775@gmail.com';
 
@@ -39,6 +40,16 @@ export async function PUT(
 ) {
   try {
     console.log('[PROJECTS] Updating project:', params.id);
+    
+    // Ensure projects table exists
+    const migrationResult = await ensureProjectsTable();
+    if (!migrationResult.success) {
+      console.error('[PROJECTS] Migration failed:', migrationResult.error);
+      return NextResponse.json(
+        { error: 'Database migration failed', details: migrationResult.error },
+        { status: 500 }
+      );
+    }
     
     // Check admin authorization
     const auth = await checkAdminAuth(request);
