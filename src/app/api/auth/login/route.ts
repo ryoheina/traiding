@@ -53,26 +53,11 @@ export async function POST(request: NextRequest) {
 
     console.log('[LOGIN] Password verified successfully');
 
-    // Check if user is approved (unless admin)
+    // Check if user is admin
     const isAdmin = email.toLowerCase() === (process.env.ADMIN_EMAIL || '').toLowerCase();
     console.log('[LOGIN] Is admin check:', { isAdmin, userEmail: email, adminEmail: process.env.ADMIN_EMAIL });
     
-    if (!isAdmin && user.approval_status !== 'approved') {
-      console.log('[LOGIN] Account not approved:', user.approval_status);
-      return NextResponse.json(
-        {
-          error: `Account ${user.approval_status}. Please contact admin for approval.`,
-          user: {
-            id: user.id,
-            email: user.email,
-            approval_status: user.approval_status
-          }
-        },
-        { status: 403 }
-      );
-    }
-
-    console.log('[LOGIN] User approved or is admin - proceeding with login');
+    console.log('[LOGIN] Proceeding with login for user:', user.approval_status);
 
     // Update last login
     console.log('[LOGIN] Updating last login timestamp');
