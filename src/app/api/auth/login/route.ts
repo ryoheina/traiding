@@ -5,6 +5,8 @@ import { query } from '@/lib/db';
 export async function POST(request: NextRequest) {
   try {
     console.log('[LOGIN] Login attempt started');
+    console.log('[LOGIN] Environment check - ADMIN_EMAIL:', process.env.ADMIN_EMAIL);
+    
     const body = await request.json();
     const { email, password } = body;
 
@@ -27,7 +29,7 @@ export async function POST(request: NextRequest) {
     );
 
     if (result.rows.length === 0) {
-      console.log('[LOGIN] User not found');
+      console.log('[LOGIN] User not found in database');
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
@@ -35,24 +37,26 @@ export async function POST(request: NextRequest) {
     }
 
     const user = result.rows[0];
-    console.log('[LOGIN] User found:', user.email, 'Approval status:', user.approval_status);
+    console.log('[LOGIN] User found:', { id: user.id, email: user.email, approval_status: user.approval_status });
 
     // Verify password
     console.log('[LOGIN] Verifying password');
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
 
     if (!isValidPassword) {
-      console.log('[LOGIN] Invalid password');
+      console.log('[LOGIN] Invalid password - password verification failed');
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
       );
     }
 
-    console.log('[LOGIN] Password valid');
+    console.log('[LOGIN] Password verified successfully');
 
     // Check if user is approved (unless admin)
-    const isAdmin = email === process.env.ADMIN_EMAIL;
+    const isAdmin = email.toLowerCase() === (process.env.ADMIN_EMAIL || '').toLowerCase();
+    console.log('[LOGIN] Is admin check:', { isAdmin, userEmail: email, adminEmail: process.env.ADMIN_EMAIL });
+    
     if (!isAdmin && user.approval_status !== 'approved') {
       console.log('[LOGIN] Account not approved:', user.approval_status);
       return NextResponse.json(
@@ -68,14 +72,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('[LOGIN] User approved/admin');
+    console.log('[LOGIN] User approved or is admin - proceeding with login');
 
     // Update last login
-    console.log('[LOGIN] Updating last login');
+    console.log('[LOGIN] Updating last login timestamp');
     await query(
       'UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1',
       [user.id]
     );
+    console.log('[LOGIN] Last login updated successfully');
 
     // Create audit log
     console.log('[LOGIN] Creating audit log');
@@ -94,8 +99,9 @@ export async function POST(request: NextRequest) {
         request.headers.get('user-agent') || ''
       ]
     );
+    console.log('[LOGIN] Audit log created successfully');
 
-    console.log('[LOGIN] Login successful');
+    console.log('[LOGIN] Login successful for user:', user.email);
     // TODO: Set up session with NextAuth
     // For now, return user data
     return NextResponse.json({
@@ -109,7 +115,7 @@ export async function POST(request: NextRequest) {
       }
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('[LOGIN] Error:', error);
     console.error('[LOGIN] Error stack:', error instanceof Error ? error.stack : 'No stack');
     console.error('[LOGIN] Error message:', error instanceof Error ? error.message : 'Unknown error');

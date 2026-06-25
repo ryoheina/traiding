@@ -47,12 +47,25 @@ export async function POST(
       suspend: 'suspended'
     };
 
-    console.log('[ADMIN-APPROVE] Updating user status to:', statusMap[action as keyof typeof statusMap]);
-    await query(
-      'UPDATE users SET approval_status = $1 WHERE id = $2',
-      [statusMap[action as keyof typeof statusMap], userId]
+    const newStatus = statusMap[action as keyof typeof statusMap];
+    console.log('[ADMIN-APPROVE] Updating user status to:', newStatus, 'for user ID:', userId);
+    
+    const updateResult = await query(
+      'UPDATE users SET approval_status = $1 WHERE id = $2 RETURNING id, approval_status',
+      [newStatus, userId]
     );
-    console.log('[ADMIN-APPROVE] User status updated successfully');
+    
+    console.log('[ADMIN-APPROVE] Database update result:', updateResult.rows);
+    
+    if (updateResult.rows.length === 0) {
+      console.error('[ADMIN-APPROVE] Failed to update user status - no rows returned');
+      return NextResponse.json(
+        { error: 'Failed to update user status - database update returned no rows' },
+        { status: 500 }
+      );
+    }
+    
+    console.log('[ADMIN-APPROVE] User status updated successfully. New status:', updateResult.rows[0].approval_status);
 
     // Create audit log
     console.log('[ADMIN-APPROVE] Creating audit log');

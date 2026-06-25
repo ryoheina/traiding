@@ -63,6 +63,8 @@ async function initializeDatabase() {
 export async function POST(request: NextRequest) {
   try {
     console.log('[REGISTER] Registration attempt started');
+    console.log('[REGISTER] Environment check - ADMIN_EMAIL:', process.env.ADMIN_EMAIL);
+    console.log('[REGISTER] Environment check - SMTP_HOST:', process.env.SMTP_HOST ? 'configured' : 'not configured');
     
     // Initialize database if needed
     await initializeDatabase();
@@ -126,7 +128,7 @@ export async function POST(request: NextRequest) {
     );
 
     const user = result.rows[0];
-    console.log('[REGISTER] User created:', user.id, user.email);
+    console.log('[REGISTER] User created successfully:', { id: user.id, email: user.email, status: user.approval_status });
 
     // Create audit log
     console.log('[REGISTER] Creating audit log');
