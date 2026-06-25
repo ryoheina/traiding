@@ -45,6 +45,8 @@ export default function AdminDashboard() {
     suspended: 0
   });
   const [loading, setLoading] = useState(true);
+  const [approvingUserId, setApprovingUserId] = useState<number | null>(null);
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -97,6 +99,7 @@ export default function AdminDashboard() {
 
   const handleApproval = async (userId: number, action: "approve" | "reject" | "suspend") => {
     try {
+      setApprovingUserId(userId);
       console.log('[APPROVAL] Request sent:', { userId, action });
       const response = await fetch(`/api/admin/users/${userId}/approve`, {
         method: "POST",
@@ -112,11 +115,21 @@ export default function AdminDashboard() {
         console.log('[APPROVAL] Approval successful, calling fetchUsers()');
         await fetchUsers();
         console.log('[APPROVAL] fetchUsers() completed');
+        
+        const actionText = action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : 'suspended';
+        setNotification({ type: 'success', message: `User ${actionText} successfully` });
+        setTimeout(() => setNotification(null), 3000);
       } else {
         console.error('[APPROVAL] Approval failed:', data.error);
+        setNotification({ type: 'error', message: data.error || 'Failed to update user status' });
+        setTimeout(() => setNotification(null), 3000);
       }
     } catch (error) {
       console.error("[APPROVAL] Failed to update user status:", error);
+      setNotification({ type: 'error', message: 'Network error. Please try again.' });
+      setTimeout(() => setNotification(null), 3000);
+    } finally {
+      setApprovingUserId(null);
     }
   };
 
@@ -145,6 +158,22 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-wolf-50 via-white to-wolf-100 dark:from-wolf-950 dark:via-wolf-900 dark:to-wolf-950">
+      {/* Notification Toast */}
+      {notification && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className={`fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 ${
+            notification.type === 'success' 
+              ? 'bg-green-500 text-white' 
+              : 'bg-red-500 text-white'
+          }`}
+        >
+          {notification.message}
+        </motion.div>
+      )}
+
       {/* Header */}
       <header className="bg-white dark:bg-wolf-900 border-b border-wolf-200 dark:border-wolf-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -328,36 +357,64 @@ export default function AdminDashboard() {
                             <>
                               <button
                                 onClick={() => handleApproval(user.id, "approve")}
-                                className="p-2 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg transition-colors"
+                                disabled={approvingUserId === user.id}
+                                className={`p-2 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg transition-colors ${
+                                  approvingUserId === user.id ? 'opacity-50 cursor-not-allowed' : ''
+                                }`}
                                 title="Approve"
                               >
-                                <Check className="w-5 h-5" />
+                                {approvingUserId === user.id ? (
+                                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-600" />
+                                ) : (
+                                  <Check className="w-5 h-5" />
+                                )}
                               </button>
                               <button
                                 onClick={() => handleApproval(user.id, "reject")}
-                                className="p-2 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                                disabled={approvingUserId === user.id}
+                                className={`p-2 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors ${
+                                  approvingUserId === user.id ? 'opacity-50 cursor-not-allowed' : ''
+                                }`}
                                 title="Reject"
                               >
-                                <X className="w-5 h-5" />
+                                {approvingUserId === user.id ? (
+                                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-red-600" />
+                                ) : (
+                                  <X className="w-5 h-5" />
+                                )}
                               </button>
                             </>
                           )}
                           {user.approval_status === "approved" && (
                             <button
                               onClick={() => handleApproval(user.id, "suspend")}
-                              className="p-2 text-purple-600 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-lg transition-colors"
+                              disabled={approvingUserId === user.id}
+                              className={`p-2 text-purple-600 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-lg transition-colors ${
+                                approvingUserId === user.id ? 'opacity-50 cursor-not-allowed' : ''
+                              }`}
                               title="Suspend"
                             >
-                              <Shield className="w-5 h-5" />
+                              {approvingUserId === user.id ? (
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-600" />
+                              ) : (
+                                <Shield className="w-5 h-5" />
+                              )}
                             </button>
                           )}
                           {user.approval_status === "suspended" && (
                             <button
                               onClick={() => handleApproval(user.id, "approve")}
-                              className="p-2 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg transition-colors"
+                              disabled={approvingUserId === user.id}
+                              className={`p-2 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg transition-colors ${
+                                approvingUserId === user.id ? 'opacity-50 cursor-not-allowed' : ''
+                              }`}
                               title="Reactivate"
                             >
-                              <UserCheck className="w-5 h-5" />
+                              {approvingUserId === user.id ? (
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-600" />
+                              ) : (
+                                <UserCheck className="w-5 h-5" />
+                              )}
                             </button>
                           )}
                         </div>
