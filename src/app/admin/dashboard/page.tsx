@@ -50,6 +50,13 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchUsers();
+    
+    // Poll for new users every 5 seconds
+    const interval = setInterval(() => {
+      fetchUsers();
+    }, 5000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
