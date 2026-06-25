@@ -17,7 +17,9 @@ import {
   X,
   Shield,
   AlertTriangle,
-  Trash2
+  Trash2,
+  Smartphone,
+  Monitor
 } from "lucide-react";
 import Link from "next/link";
 
@@ -443,8 +445,17 @@ export default function AdminDashboard() {
                         {new Date(user.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 text-sm text-wolf-600 dark:text-wolf-400">
-                        <p>{user.device_info?.type || "Unknown"}</p>
-                        <p className="text-xs">{user.ip_address || "Unknown"}</p>
+                        <div className="flex items-center space-x-2">
+                          {user.device_info?.type === 'mobile' || user.device_info?.type === 'phone' ? (
+                            <Smartphone className="w-4 h-4" />
+                          ) : user.device_info?.type === 'desktop' || user.device_info?.type === 'web' ? (
+                            <Monitor className="w-4 h-4" />
+                          ) : (
+                            <Clock className="w-4 h-4" />
+                          )}
+                          <span className="capitalize">{user.device_info?.type || "Unknown"}</span>
+                        </div>
+                        <p className="text-xs mt-1">{user.ip_address || "Unknown"}</p>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end space-x-2">
