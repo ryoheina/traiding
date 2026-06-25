@@ -1,7 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 
+const ADMIN_EMAIL = 'aivideo7775@gmail.com';
+
 export const dynamic = 'force-dynamic';
+
+const checkAdminAuth = async (request: NextRequest) => {
+  const sessionCookie = request.cookies.get('session');
+  if (!sessionCookie) {
+    return { authorized: false, reason: 'No session' };
+  }
+
+  const sessionData = JSON.parse(sessionCookie.value);
+  if (!sessionData.userId) {
+    return { authorized: false, reason: 'Invalid session' };
+  }
+
+  const userResult = await query(
+    'SELECT email FROM users WHERE id = $1',
+    [sessionData.userId]
+  );
+
+  if (userResult.rows.length === 0) {
+    return { authorized: false, reason: 'User not found' };
+  }
+
+  const user = userResult.rows[0];
+  if (user.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+    return { authorized: false, reason: 'Not admin' };
+  }
+
+  return { authorized: true, user };
+};
 
 export async function PUT(
   request: NextRequest,
@@ -9,6 +39,19 @@ export async function PUT(
 ) {
   try {
     console.log('[PROJECTS] Updating project:', params.id);
+    
+    // Check admin authorization
+    const auth = await checkAdminAuth(request);
+    if (!auth.authorized) {
+      console.log('[PROJECTS] Authorization failed:', auth.reason);
+      return NextResponse.json(
+        { error: 'Forbidden - Admin access required' },
+        { status: 403 }
+      );
+    }
+    
+    console.log('[PROJECTS] Admin verified:', auth.user.email);
+    
     const body = await request.json();
     const { title, description, image_url, rar_file_url, status } = body;
     const projectId = parseInt(params.id);
@@ -65,6 +108,19 @@ export async function DELETE(
 ) {
   try {
     console.log('[PROJECTS] Deleting project:', params.id);
+    
+    // Check admin authorization
+    const auth = await checkAdminAuth(request);
+    if (!auth.authorized) {
+      console.log('[PROJECTS] Authorization failed:', auth.reason);
+      return NextResponse.json(
+        { error: 'Forbidden - Admin access required' },
+        { status: 403 }
+      );
+    }
+    
+    console.log('[PROJECTS] Admin verified:', auth.user.email);
+    
     const projectId = parseInt(params.id);
     
     if (isNaN(projectId)) {

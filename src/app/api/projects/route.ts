@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 
+const ADMIN_EMAIL = 'aivideo7775@gmail.com';
+
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
@@ -36,6 +38,51 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     console.log('[PROJECTS] Creating new project');
+    
+    // Check admin authorization
+    const sessionCookie = request.cookies.get('session');
+    if (!sessionCookie) {
+      console.log('[PROJECTS] No session cookie found');
+      return NextResponse.json(
+        { error: 'Unauthorized - No session' },
+        { status: 401 }
+      );
+    }
+
+    const sessionData = JSON.parse(sessionCookie.value);
+    if (!sessionData.userId) {
+      console.log('[PROJECTS] No userId in session');
+      return NextResponse.json(
+        { error: 'Unauthorized - Invalid session' },
+        { status: 401 }
+      );
+    }
+
+    // Fetch user to check if admin
+    const userResult = await query(
+      'SELECT email FROM users WHERE id = $1',
+      [sessionData.userId]
+    );
+
+    if (userResult.rows.length === 0) {
+      console.log('[PROJECTS] User not found');
+      return NextResponse.json(
+        { error: 'Unauthorized - User not found' },
+        { status: 401 }
+      );
+    }
+
+    const user = userResult.rows[0];
+    if (user.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+      console.log('[PROJECTS] User is not admin:', user.email);
+      return NextResponse.json(
+        { error: 'Forbidden - Admin access required' },
+        { status: 403 }
+      );
+    }
+
+    console.log('[PROJECTS] Admin verified:', user.email);
+    
     const body = await request.json();
     const { title, description, image_url, rar_file_url, status } = body;
     

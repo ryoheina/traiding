@@ -72,13 +72,6 @@ export default function RegisterSuccessPage() {
               >
                 Return to Home
               </Link>
-              <span className="text-wolf-300 dark:text-wolf-600">|</span>
-              <Link
-                href="/team"
-                className="text-wolf-600 dark:text-wolf-400 hover:text-gold-600 dark:hover:text-gold-400 transition-colors"
-              >
-                Team Page
-              </Link>
             </div>
 
             <p className="text-sm text-wolf-500 dark:text-wolf-500">
