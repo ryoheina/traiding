@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
         id: user.id,
         fullName: user.full_name,
         email: user.email,
-        approvalStatus: user.approval_status,
+        approval_status: user.approval_status,
         role: isAdmin ? 'admin' : 'member'
       }
     });
