@@ -12,40 +12,50 @@ async function initializeDatabase() {
     
     // Try to query the users table to see if it exists
     try {
-      await query('SELECT 1 FROM users LIMIT 1');
-      console.log('[INIT-DB] Database already initialized');
+      const result = await query('SELECT 1 FROM users LIMIT 1');
+      console.log('[INIT-DB] Database already initialized, users table exists');
       return;
-    } catch (error) {
+    } catch (error: any) {
       console.log('[INIT-DB] Users table does not exist, initializing...');
+      console.log('[INIT-DB] Error checking users table:', error.message);
     }
 
     // Read the schema file
     const schemaPath = path.join(process.cwd(), 'src', 'lib', 'schema.sql');
+    console.log('[INIT-DB] Reading schema from:', schemaPath);
     const schema = fs.readFileSync(schemaPath, 'utf-8');
+    console.log('[INIT-DB] Schema file read successfully, length:', schema.length);
 
     // Split by semicolon to get individual statements
     const statements = schema
       .split(';')
       .map(s => s.trim())
       .filter(s => s.length > 0 && !s.startsWith('--'));
+    
+    console.log('[INIT-DB] Found', statements.length, 'SQL statements to execute');
 
     // Execute each statement
-    for (const statement of statements) {
+    for (let i = 0; i < statements.length; i++) {
+      const statement = statements[i];
       try {
         await query(statement);
-        console.log('[INIT-DB] Executed statement:', statement.substring(0, 50) + '...');
-      } catch (error) {
+        console.log(`[INIT-DB] Executed statement ${i + 1}/${statements.length}:`, statement.substring(0, 50) + '...');
+      } catch (error: any) {
         // Ignore errors for IF NOT EXISTS statements
         if (!statement.includes('IF NOT EXISTS')) {
           console.error('[INIT-DB] Failed to execute statement:', statement);
+          console.error('[INIT-DB] Error:', error.message);
           throw error;
+        } else {
+          console.log('[INIT-DB] IF NOT EXISTS statement failed (expected):', statement.substring(0, 50) + '...');
         }
       }
     }
 
-    console.log('[INIT-DB] Database initialization completed');
-  } catch (error) {
-    console.error('[INIT-DB] Error:', error);
+    console.log('[INIT-DB] Database initialization completed successfully');
+  } catch (error: any) {
+    console.error('[INIT-DB] Fatal error during initialization:', error.message);
+    console.error('[INIT-DB] Stack:', error.stack);
     // Don't throw - let registration proceed even if init fails
   }
 }
