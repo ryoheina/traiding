@@ -56,8 +56,12 @@ export async function POST(
       ]
     );
 
-    // Send email notification to user about status change
-    await sendApprovalEmail(user.email, user.full_name, action as 'approved' | 'rejected' | 'suspended');
+    // Send email notification to user about status change (optional - don't fail if this doesn't work)
+    try {
+      await sendApprovalEmail(user.email, user.full_name, action as 'approved' | 'rejected' | 'suspended');
+    } catch (emailError) {
+      console.error('Failed to send approval email:', emailError);
+    }
 
     return NextResponse.json({
       success: true,
