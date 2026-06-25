@@ -60,6 +60,8 @@ CREATE TABLE IF NOT EXISTS projects (
   id SERIAL PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
   description TEXT,
+  image_url VARCHAR(500),
+  rar_file_url VARCHAR(500),
   status VARCHAR(50) DEFAULT 'active' CHECK (status IN ('active', 'completed', 'archived')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP

@@ -102,9 +102,9 @@ export async function POST(request: NextRequest) {
     console.log('[LOGIN] Audit log created successfully');
 
     console.log('[LOGIN] Login successful for user:', user.email);
-    // TODO: Set up session with NextAuth
-    // For now, return user data
-    return NextResponse.json({
+    
+    // Set session cookie
+    const response = NextResponse.json({
       success: true,
       user: {
         id: user.id,
@@ -114,6 +114,16 @@ export async function POST(request: NextRequest) {
         role: isAdmin ? 'admin' : 'member'
       }
     });
+    
+    // Set session cookie
+    response.cookies.set('session', JSON.stringify({ userId: user.id }), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7 // 7 days
+    });
+    
+    return response;
 
   } catch (error: any) {
     console.error('[LOGIN] Error:', error);
