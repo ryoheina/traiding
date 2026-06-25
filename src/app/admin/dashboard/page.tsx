@@ -195,7 +195,7 @@ export default function AdminDashboard() {
     setPasswordError('');
 
     // Simple password verification - in production, use proper authentication
-    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'rlaeoqja20070925';
 
     if (password === ADMIN_PASSWORD) {
       setIsAuthenticated(true);
@@ -283,7 +283,7 @@ export default function AdminDashboard() {
           </form>
 
           <p className="mt-6 text-center text-sm text-wolf-500 dark:text-wolf-400">
-            Default password: admin123
+            Password: rlaeoqja20070925
           </p>
         </motion.div>
       </div>
