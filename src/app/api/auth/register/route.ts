@@ -5,6 +5,8 @@ import { sendNewRegistrationNotification } from '@/lib/email';
 import fs from 'fs';
 import path from 'path';
 
+export const dynamic = 'force-dynamic';
+
 // Function to initialize database schema
 async function initializeDatabase() {
   try {
