@@ -64,7 +64,7 @@ export default function LoginPage() {
         if (data.user.role === "admin") {
           router.push("/admin/dashboard");
         } else if (data.user.approval_status === "approved") {
-          router.push("/dashboard");
+          router.push("/team");
         } else {
           router.push("/register/success");
         }

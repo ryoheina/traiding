@@ -11,7 +11,7 @@ const checkAdminAuth = async (request: NextRequest) => {
     return { authorized: false, reason: 'No session' };
   }
 
-  const sessionData = JSON.parse(sessionCookie.value);
+  const sessionData = JSON.parse(decodeURIComponent(sessionCookie.value));
   if (!sessionData.userId) {
     return { authorized: false, reason: 'Invalid session' };
   }

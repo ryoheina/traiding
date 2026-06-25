@@ -281,10 +281,6 @@ export default function AdminDashboard() {
               )}
             </button>
           </form>
-
-          <p className="mt-6 text-center text-sm text-wolf-500 dark:text-wolf-400">
-            Password: rlaeoqja20070925
-          </p>
         </motion.div>
       </div>
     );

@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const sessionData = JSON.parse(sessionCookie.value);
+    const sessionData = JSON.parse(decodeURIComponent(sessionCookie.value));
     if (!sessionData.userId) {
       console.log('[PROJECTS] No userId in session');
       return NextResponse.json(
