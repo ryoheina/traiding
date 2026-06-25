@@ -30,11 +30,19 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     
+    console.log('[UPLOAD] File size:', buffer.length, 'bytes');
+    
     // Create upload directory if it doesn't exist
     const uploadDir = path.join(process.cwd(), 'public', 'uploads', type);
+    console.log('[UPLOAD] Upload directory:', uploadDir);
+    console.log('[UPLOAD] Directory exists before:', existsSync(uploadDir));
+    
     if (!existsSync(uploadDir)) {
       await mkdir(uploadDir, { recursive: true });
+      console.log('[UPLOAD] Directory created');
     }
+    
+    console.log('[UPLOAD] Directory exists after:', existsSync(uploadDir));
     
     // Generate unique filename
     const timestamp = Date.now();
@@ -42,13 +50,18 @@ export async function POST(request: NextRequest) {
     const filename = `${timestamp}_${originalName}`;
     const filepath = path.join(uploadDir, filename);
     
+    console.log('[UPLOAD] Writing file to:', filepath);
+    
     // Write file
     await writeFile(filepath, buffer);
     
     // Verify file was written
     if (!existsSync(filepath)) {
+      console.error('[UPLOAD] File was not written successfully');
       throw new Error('File was not written successfully');
     }
+    
+    console.log('[UPLOAD] File verified to exist:', existsSync(filepath));
     
     // Return public URL - use API route for serving files
     const baseUrl = request.nextUrl.origin;
