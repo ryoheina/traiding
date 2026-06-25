@@ -13,13 +13,17 @@ import {
   Menu,
   X,
   Moon,
-  Sun
+  Sun,
+  Image as ImageIcon,
+  FileArchive
 } from "lucide-react";
 import Link from "next/link";
 
 export default function Home() {
   const [isDark, setIsDark] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [loadingProjects, setLoadingProjects] = useState(true);
 
   useEffect(() => {
     const dark = localStorage.getItem("dark") === "true";
@@ -28,6 +32,24 @@ export default function Home() {
       document.documentElement.classList.add("dark");
     }
   }, []);
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    try {
+      const response = await fetch('/api/projects');
+      if (response.ok) {
+        const data = await response.json();
+        setProjects(data.projects || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch projects:', error);
+    } finally {
+      setLoadingProjects(false);
+    }
+  };
 
   const toggleDark = () => {
     const newDark = !isDark;
@@ -118,6 +140,7 @@ export default function Home() {
               <a href="#about" className="text-wolf-600 dark:text-wolf-400 hover:text-wolf-900 dark:hover:text-white transition-colors">About</a>
               <a href="#achievements" className="text-wolf-600 dark:text-wolf-400 hover:text-wolf-900 dark:hover:text-white transition-colors">Achievements</a>
               <a href="#benefits" className="text-wolf-600 dark:text-wolf-400 hover:text-wolf-900 dark:hover:text-white transition-colors">Benefits</a>
+              <a href="#projects" className="text-wolf-600 dark:text-wolf-400 hover:text-wolf-900 dark:hover:text-white transition-colors">Projects</a>
               <button
                 onClick={toggleDark}
                 className="p-2 rounded-lg bg-wolf-100 dark:bg-wolf-800 text-wolf-600 dark:text-wolf-400 hover:bg-wolf-200 dark:hover:bg-wolf-700 transition-colors"
@@ -160,6 +183,7 @@ export default function Home() {
             <a href="#about" className="block text-wolf-600 dark:text-wolf-400 hover:text-wolf-900 dark:hover:text-white">About</a>
             <a href="#achievements" className="block text-wolf-600 dark:text-wolf-400 hover:text-wolf-900 dark:hover:text-white">Achievements</a>
             <a href="#benefits" className="block text-wolf-600 dark:text-wolf-400 hover:text-wolf-900 dark:hover:text-white">Benefits</a>
+            <a href="#projects" className="block text-wolf-600 dark:text-wolf-400 hover:text-wolf-900 dark:hover:text-white">Projects</a>
             <Link
               href="/register"
               className="block w-full px-6 py-3 bg-gradient-to-r from-gold-500 to-gold-600 text-white font-semibold rounded-lg text-center"
@@ -381,6 +405,66 @@ export default function Home() {
               <ArrowRight className="w-5 h-5" />
             </Link>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Projects Section */}
+      <section id="projects" className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="font-display text-4xl md:text-5xl font-bold text-wolf-900 dark:text-white mb-4">
+              Our Projects
+            </h2>
+            <p className="text-lg text-wolf-600 dark:text-wolf-400 max-w-2xl mx-auto">
+              Explore our latest trading projects and resources
+            </p>
+          </motion.div>
+
+          {loadingProjects ? (
+            <div className="text-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold-500 mx-auto" />
+            </div>
+          ) : projects.length === 0 ? (
+            <div className="text-center py-20">
+              <FileArchive className="w-16 h-16 text-wolf-400 mx-auto mb-4" />
+              <p className="text-wolf-600 dark:text-wolf-400 text-lg">No projects available yet</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {projects.map((project) => (
+                <motion.div
+                  key={project.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="bg-white dark:bg-wolf-900 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow border border-wolf-200 dark:border-wolf-800"
+                >
+                  <div className="relative h-48 bg-gradient-to-br from-gold-400 to-gold-600">
+                    {project.image_url ? (
+                      <img
+                        src={project.image_url}
+                        alt={project.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <ImageIcon className="w-16 h-16 text-white/50" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold text-wolf-900 dark:text-white mb-2">{project.title}</h3>
+                    <p className="text-wolf-600 dark:text-wolf-400 text-sm line-clamp-2">{project.description}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
