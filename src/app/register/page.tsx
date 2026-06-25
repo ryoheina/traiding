@@ -114,7 +114,7 @@ export default function RegisterPage() {
           document.body.removeChild(a);
         }
 
-        router.push("/register/success");
+        router.push("/login");
       } else {
         setErrors({ submit: data.error || "Registration failed" });
       }
