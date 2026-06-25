@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { ensureProjectsTable } from '@/lib/migrate-projects';
 
 const ADMIN_EMAIL = 'aivideo7775@gmail.com';
 
@@ -38,6 +39,17 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     console.log('[PROJECTS] Creating new project');
+    
+    // Ensure projects table exists
+    const migrationResult = await ensureProjectsTable();
+    if (!migrationResult.success) {
+      console.error('[PROJECTS] Migration failed:', migrationResult.error);
+      return NextResponse.json(
+        { error: 'Database migration failed', details: migrationResult.error },
+        { status: 500 }
+      );
+    }
+    
     console.log('[PROJECTS] Cookies:', request.cookies.getAll());
     
     // Check admin authorization
