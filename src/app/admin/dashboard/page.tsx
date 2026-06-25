@@ -393,7 +393,10 @@ export default function AdminDashboard() {
                     User
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-wolf-600 dark:text-wolf-400 uppercase tracking-wider">
-                    Contact
+                    Email
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-wolf-600 dark:text-wolf-400 uppercase tracking-wider">
+                    Phone
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-wolf-600 dark:text-wolf-400 uppercase tracking-wider">
                     Status
@@ -427,7 +430,9 @@ export default function AdminDashboard() {
                       </td>
                       <td className="px-6 py-4">
                         <p className="text-wolf-900 dark:text-white">{user.email}</p>
-                        <p className="text-sm text-wolf-500 dark:text-wolf-400">{user.phone}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-wolf-900 dark:text-white">{user.phone}</p>
                       </td>
                       <td className="px-6 py-4">
                         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(user.approval_status)}`}>
