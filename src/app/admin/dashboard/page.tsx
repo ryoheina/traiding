@@ -16,7 +16,8 @@ import {
   Check,
   X,
   Shield,
-  AlertTriangle
+  AlertTriangle,
+  Trash2
 } from "lucide-react";
 import Link from "next/link";
 
@@ -46,7 +47,9 @@ export default function AdminDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [approvingUserId, setApprovingUserId] = useState<number | null>(null);
+  const [deletingUserId, setDeletingUserId] = useState<number | null>(null);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<{ userId: number; userName: string } | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -141,6 +144,40 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleDelete = async (userId: number) => {
+    try {
+      setDeletingUserId(userId);
+      console.log('[DELETE] Request sent:', { userId });
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: "DELETE",
+      });
+
+      console.log('[DELETE] Response status:', response.status);
+      const data = await response.json();
+      console.log('[DELETE] Response data:', data);
+
+      if (response.ok) {
+        console.log('[DELETE] Delete successful, calling fetchUsers()');
+        await fetchUsers();
+        console.log('[DELETE] fetchUsers() completed');
+        
+        setNotification({ type: 'success', message: 'User deleted successfully' });
+        setTimeout(() => setNotification(null), 3000);
+      } else {
+        console.error('[DELETE] Delete failed:', data.error);
+        setNotification({ type: 'error', message: data.error || 'Failed to delete user' });
+        setTimeout(() => setNotification(null), 3000);
+      }
+    } catch (error) {
+      console.error("[DELETE] Failed to delete user:", error);
+      setNotification({ type: 'error', message: 'Network error. Please try again.' });
+      setTimeout(() => setNotification(null), 3000);
+    } finally {
+      setDeletingUserId(null);
+      setShowDeleteConfirm(null);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "approved":
@@ -180,6 +217,51 @@ export default function AdminDashboard() {
         >
           {notification.message}
         </motion.div>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white dark:bg-wolf-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl"
+          >
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
+                <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-wolf-900 dark:text-white">
+                Delete User
+              </h3>
+            </div>
+            <p className="text-wolf-600 dark:text-wolf-400 mb-6">
+              Are you sure you want to delete <strong>{showDeleteConfirm.userName}</strong>? This action cannot be undone.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowDeleteConfirm(null)}
+                className="px-4 py-2 text-wolf-600 dark:text-wolf-400 hover:bg-wolf-100 dark:hover:bg-wolf-700 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(showDeleteConfirm.userId)}
+                disabled={deletingUserId === showDeleteConfirm.userId}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {deletingUserId === showDeleteConfirm.userId ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                    <span>Deleting...</span>
+                  </div>
+                ) : (
+                  'Delete'
+                )}
+              </button>
+            </div>
+          </motion.div>
+        </div>
       )}
 
       {/* Header */}
@@ -425,6 +507,20 @@ export default function AdminDashboard() {
                               )}
                             </button>
                           )}
+                          <button
+                            onClick={() => setShowDeleteConfirm({ userId: user.id, userName: user.full_name })}
+                            disabled={deletingUserId === user.id}
+                            className={`p-2 text-gray-600 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400 rounded-lg transition-colors ${
+                              deletingUserId === user.id ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
+                            title="Delete User"
+                          >
+                            {deletingUserId === user.id ? (
+                              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-red-600" />
+                            ) : (
+                              <Trash2 className="w-5 h-5" />
+                            )}
+                          </button>
                         </div>
                       </td>
                     </tr>
