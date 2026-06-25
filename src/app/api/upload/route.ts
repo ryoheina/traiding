@@ -63,11 +63,10 @@ export async function POST(request: NextRequest) {
     
     console.log('[UPLOAD] File verified to exist:', existsSync(filepath));
     
-    // Return public URL - use API route for serving files
-    const baseUrl = request.nextUrl.origin;
-    const fileUrl = `${baseUrl}/api/uploads/${type}/${filename}`;
+    // Return public URL - use relative URL to work with any domain
+    const fileUrl = `/api/uploads/${type}/${filename}`;
     
-    console.log('[UPLOAD] File uploaded successfully:', { filename, type, fileUrl, filepath, baseUrl });
+    console.log('[UPLOAD] File uploaded successfully:', { filename, type, fileUrl, filepath });
     
     const response = NextResponse.json({
       success: true,
