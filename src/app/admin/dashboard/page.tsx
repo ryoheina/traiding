@@ -19,7 +19,12 @@ import {
   AlertTriangle,
   Trash2,
   Smartphone,
-  Monitor
+  Monitor,
+  Plus,
+  Edit,
+  FolderOpen,
+  Image as ImageIcon,
+  Upload
 } from "lucide-react";
 import Link from "next/link";
 
@@ -33,6 +38,17 @@ interface User {
   device_info: any;
   browser_info: any;
   ip_address: string;
+}
+
+interface Project {
+  id: number;
+  title: string;
+  description: string;
+  image_url: string;
+  rar_file_url: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export default function AdminDashboard() {
@@ -56,15 +72,31 @@ export default function AdminDashboard() {
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
+  
+  // Project management state
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [activeTab, setActiveTab] = useState<'users' | 'projects'>('users');
+  const [showProjectModal, setShowProjectModal] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [projectFormData, setProjectFormData] = useState({
+    title: '',
+    description: '',
+    image_url: '',
+    rar_file_url: ''
+  });
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingRar, setUploadingRar] = useState(false);
 
   useEffect(() => {
     // Only fetch users if authenticated
     if (isAuthenticated) {
       fetchUsers();
+      fetchProjects();
       
       // Poll for new users every 5 seconds
       const interval = setInterval(() => {
         fetchUsers();
+        fetchProjects();
       }, 5000);
       
       return () => clearInterval(interval);
@@ -98,7 +130,7 @@ export default function AdminDashboard() {
       const cacheBuster = Date.now();
       const response = await fetch(`/api/admin/users?_t=${cacheBuster}`, { cache: 'no-store' });
       const data = await response.json();
-      
+
       console.log('[FETCH-USERS] Response status:', response.status);
       console.log('[FETCH-USERS] Response data users:', data.users);
       console.log('[FETCH-USERS] State before update:', users.map((u: User) => ({ id: u.id, status: u.approval_status })));
@@ -116,6 +148,18 @@ export default function AdminDashboard() {
       console.error("[FETCH-USERS] Failed to fetch users:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchProjects = async () => {
+    try {
+      const response = await fetch('/api/projects');
+      if (response.ok) {
+        const data = await response.json();
+        setProjects(data.projects || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch projects:', error);
     }
   };
 
@@ -186,6 +230,109 @@ export default function AdminDashboard() {
     } finally {
       setDeletingUserId(null);
       setShowDeleteConfirm(null);
+    }
+  };
+
+  const handleProjectSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      let imageUrl = projectFormData.image_url;
+      let rarUrl = projectFormData.rar_file_url;
+
+      // Handle image upload if file provided
+      const imageInput = document.getElementById('project-image-file') as HTMLInputElement;
+      if (imageInput?.files?.[0]) {
+        setUploadingImage(true);
+        const formData = new FormData();
+        formData.append('file', imageInput.files[0]);
+        formData.append('type', 'image');
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        if (uploadResponse.ok) {
+          const uploadData = await uploadResponse.json();
+          imageUrl = uploadData.fileUrl;
+        }
+        setUploadingImage(false);
+      }
+
+      // Handle RAR upload if file provided
+      const rarInput = document.getElementById('project-rar-file') as HTMLInputElement;
+      if (rarInput?.files?.[0]) {
+        setUploadingRar(true);
+        const formData = new FormData();
+        formData.append('file', rarInput.files[0]);
+        formData.append('type', 'rar');
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        if (uploadResponse.ok) {
+          const uploadData = await uploadResponse.json();
+          rarUrl = uploadData.fileUrl;
+        }
+        setUploadingRar(false);
+      }
+
+      const payload = {
+        title: projectFormData.title,
+        description: projectFormData.description,
+        image_url: imageUrl,
+        rar_file_url: rarUrl,
+        status: 'active'
+      };
+
+      let response;
+      if (editingProject) {
+        response = await fetch(`/api/projects/${editingProject.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+      } else {
+        response = await fetch('/api/projects', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+      }
+
+      if (response.ok) {
+        setNotification({ type: 'success', message: editingProject ? 'Project updated successfully' : 'Project created successfully' });
+        setProjectFormData({ title: '', description: '', image_url: '', rar_file_url: '' });
+        setEditingProject(null);
+        setShowProjectModal(false);
+        fetchProjects();
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save project');
+      }
+    } catch (error: any) {
+      console.error('Failed to save project:', error);
+      setNotification({ type: 'error', message: error.message || 'Failed to save project' });
+    }
+  };
+
+  const handleProjectDelete = async (projectId: number) => {
+    if (!confirm('Are you sure you want to delete this project?')) return;
+
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setNotification({ type: 'success', message: 'Project deleted successfully' });
+        fetchProjects();
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete project');
+      }
+    } catch (error: any) {
+      console.error('Failed to delete project:', error);
+      setNotification({ type: 'error', message: error.message || 'Failed to delete project' });
     }
   };
 
@@ -378,6 +525,32 @@ export default function AdminDashboard() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Tab Navigation */}
+        <div className="flex space-x-4 mb-8">
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
+              activeTab === 'users'
+                ? 'bg-gold-500 text-white'
+                : 'bg-white dark:bg-wolf-900 text-wolf-600 dark:text-wolf-400 hover:bg-wolf-100 dark:hover:bg-wolf-800'
+            }`}
+          >
+            Users
+          </button>
+          <button
+            onClick={() => setActiveTab('projects')}
+            className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
+              activeTab === 'projects'
+                ? 'bg-gold-500 text-white'
+                : 'bg-white dark:bg-wolf-900 text-wolf-600 dark:text-wolf-400 hover:bg-wolf-100 dark:hover:bg-wolf-800'
+            }`}
+          >
+            Projects
+          </button>
+        </div>
+
+        {activeTab === 'users' ? (
+          <>
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <motion.div
@@ -636,7 +809,189 @@ export default function AdminDashboard() {
             </div>
           )}
         </motion.div>
+          </>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white dark:bg-wolf-900 rounded-xl shadow-lg border border-wolf-200 dark:border-wolf-800"
+          >
+            <div className="p-6 border-b border-wolf-200 dark:border-wolf-800 flex justify-between items-center">
+              <h2 className="font-display text-2xl font-bold text-wolf-900 dark:text-white">
+                Project Management
+              </h2>
+              <button
+                onClick={() => {
+                  setEditingProject(null);
+                  setProjectFormData({ title: '', description: '', image_url: '', rar_file_url: '' });
+                  setShowProjectModal(true);
+                }}
+                className="flex items-center space-x-2 px-4 py-2 bg-gold-500 text-white rounded-lg hover:bg-gold-600 transition-colors"
+              >
+                <Plus className="w-5 h-5" />
+                <span>Add Project</span>
+              </button>
+            </div>
+            <div className="p-6">
+              {projects.length === 0 ? (
+                <div className="text-center py-12">
+                  <FolderOpen className="w-12 h-12 text-wolf-400 mx-auto mb-4" />
+                  <p className="text-wolf-600 dark:text-wolf-400">No projects available</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {projects.map((project) => (
+                    <div
+                      key={project.id}
+                      className="bg-wolf-50 dark:bg-wolf-800 rounded-xl overflow-hidden border border-wolf-200 dark:border-wolf-800"
+                    >
+                      <div className="relative h-48 bg-gradient-to-br from-gold-400 to-gold-600">
+                        {project.image_url ? (
+                          <img
+                            src={project.image_url}
+                            alt={project.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <ImageIcon className="w-16 h-16 text-white/50" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-4">
+                        <h3 className="text-lg font-semibold text-wolf-900 dark:text-white mb-2">{project.title}</h3>
+                        <p className="text-wolf-600 dark:text-wolf-400 text-sm line-clamp-2 mb-4">{project.description}</p>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => {
+                              setEditingProject(project);
+                              setProjectFormData({
+                                title: project.title,
+                                description: project.description,
+                                image_url: project.image_url,
+                                rar_file_url: project.rar_file_url
+                              });
+                              setShowProjectModal(true);
+                            }}
+                            className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                          >
+                            <Edit className="w-4 h-4" />
+                            <span>Edit</span>
+                          </button>
+                          <button
+                            onClick={() => handleProjectDelete(project.id)}
+                            className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            <span>Delete</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
       </div>
+
+      {/* Project Modal */}
+      {showProjectModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white dark:bg-wolf-800 rounded-2xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto"
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                {editingProject ? 'Edit Project' : 'Add Project'}
+              </h2>
+              <button
+                onClick={() => setShowProjectModal(false)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-wolf-700 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleProjectSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Title *
+                </label>
+                <input
+                  type="text"
+                  value={projectFormData.title}
+                  onChange={(e) => setProjectFormData({ ...projectFormData, title: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-wolf-700 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-transparent bg-white dark:bg-wolf-900 text-gray-900 dark:text-white"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Description
+                </label>
+                <textarea
+                  value={projectFormData.description}
+                  onChange={(e) => setProjectFormData({ ...projectFormData, description: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-wolf-700 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-transparent bg-white dark:bg-wolf-900 text-gray-900 dark:text-white"
+                  rows={3}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Project Image
+                </label>
+                <input
+                  type="file"
+                  id="project-image-file"
+                  accept="image/*"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-wolf-700 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-transparent bg-white dark:bg-wolf-900 text-gray-900 dark:text-white"
+                />
+                {uploadingImage && (
+                  <p className="text-sm text-blue-600 mt-1">Uploading image...</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  RAR File
+                </label>
+                <input
+                  type="file"
+                  id="project-rar-file"
+                  accept=".rar"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-wolf-700 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-transparent bg-white dark:bg-wolf-900 text-gray-900 dark:text-white"
+                />
+                {uploadingRar && (
+                  <p className="text-sm text-blue-600 mt-1">Uploading RAR file...</p>
+                )}
+              </div>
+
+              <div className="flex space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowProjectModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-wolf-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-wolf-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={uploadingImage || uploadingRar}
+                  className="flex-1 px-4 py-2 bg-gold-500 text-white rounded-lg hover:bg-gold-600 transition-colors disabled:opacity-50"
+                >
+                  {editingProject ? 'Update' : 'Create'}
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }
