@@ -448,7 +448,13 @@ export default function Home() {
                     className="relative h-48 bg-gradient-to-br from-gold-400 to-gold-600 cursor-pointer group"
                     onClick={() => {
                       if (project.rar_file_url) {
-                        window.open(project.rar_file_url, '_blank');
+                        // Create a download link to force download
+                        const link = document.createElement('a');
+                        link.href = project.rar_file_url;
+                        link.download = '';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
                       }
                     }}
                   >
