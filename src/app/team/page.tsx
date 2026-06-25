@@ -50,26 +50,35 @@ export default function TeamPage() {
 
   const checkUserAccess = async () => {
     try {
+      console.log('[TEAM-PAGE] Checking user access');
       // Check if user is logged in and approved
       const response = await fetch('/api/auth/session');
+      console.log('[TEAM-PAGE] Session response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('[TEAM-PAGE] Session data:', data);
+        
         if (data.user && data.user.approval_status === 'approved') {
+          console.log('[TEAM-PAGE] User approved, granting access');
           setIsAuthenticated(true);
           setUserStatus('approved');
           // Check if admin (you can customize this logic)
           if (data.user.email === 'aivideo7775@gmail.com') {
+            console.log('[TEAM-PAGE] User is admin');
             setIsAdmin(true);
           }
           fetchProjects();
         } else {
+          console.log('[TEAM-PAGE] User not approved or no user:', data.user?.approval_status);
           setUserStatus(data.user?.approval_status || 'not_logged_in');
         }
       } else {
+        console.log('[TEAM-PAGE] Session check failed');
         setUserStatus('not_logged_in');
       }
     } catch (error) {
-      console.error('Failed to check user access:', error);
+      console.error('[TEAM-PAGE] Failed to check user access:', error);
       setUserStatus('error');
     } finally {
       setLoading(false);

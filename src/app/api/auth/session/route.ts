@@ -5,21 +5,24 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    // Check if user has a valid session
-    // For now, we'll use a simple cookie-based approach
-    // In production, you'd use proper session management
+    console.log('[SESSION] Checking user session');
     
+    // Check if user has a valid session
     const sessionCookie = request.cookies.get('session');
     
     if (!sessionCookie) {
+      console.log('[SESSION] No session cookie found');
       return NextResponse.json({ user: null });
     }
 
+    console.log('[SESSION] Session cookie found');
+
     // Parse session and get user info
-    // This is a simplified version - in production use proper JWT or session store
     const sessionData = JSON.parse(sessionCookie.value);
+    console.log('[SESSION] Session data:', { userId: sessionData.userId });
     
     if (!sessionData.userId) {
+      console.log('[SESSION] No userId in session data');
       return NextResponse.json({ user: null });
     }
 
@@ -30,8 +33,12 @@ export async function GET(request: NextRequest) {
     );
 
     if (result.rows.length === 0) {
+      console.log('[SESSION] User not found in database');
       return NextResponse.json({ user: null });
     }
+
+    const user = result.rows[0];
+    console.log('[SESSION] User found:', { id: user.id, email: user.email, approval_status: user.approval_status });
 
     return NextResponse.json({ user: result.rows[0] });
   } catch (error) {
