@@ -11,16 +11,31 @@ export async function GET(
 ) {
   try {
     const filePath = params.path.join('/');
-    const fullPath = path.join(process.cwd(), 'public', 'uploads', filePath);
+    
+    // Try multiple possible paths
+    const possiblePaths = [
+      path.join(process.cwd(), 'public', 'uploads', filePath),
+      path.join(process.cwd(), 'uploads', filePath),
+      path.join(process.cwd(), '.next', 'public', 'uploads', filePath),
+    ];
 
-    console.log('[FILE-SERVE] Requesting file:', filePath);
-    console.log('[FILE-SERVE] Full path:', fullPath);
-    console.log('[FILE-SERVE] File exists:', existsSync(fullPath));
+    let fullPath = '';
+    let fileExists = false;
 
-    if (!existsSync(fullPath)) {
-      console.log('[FILE-SERVE] File not found:', fullPath);
+    for (const possiblePath of possiblePaths) {
+      console.log('[FILE-SERVE] Checking path:', possiblePath);
+      if (existsSync(possiblePath)) {
+        fullPath = possiblePath;
+        fileExists = true;
+        console.log('[FILE-SERVE] File found at:', fullPath);
+        break;
+      }
+    }
+
+    if (!fileExists) {
+      console.log('[FILE-SERVE] File not found in any location');
       return NextResponse.json(
-        { error: 'File not found', path: filePath },
+        { error: 'File not found', path: filePath, checkedPaths: possiblePaths },
         { status: 404 }
       );
     }
@@ -43,7 +58,7 @@ export async function GET(
 
     const contentType = contentTypeMap[ext] || 'application/octet-stream';
 
-    console.log('[FILE-SERVE] Serving file:', { filePath, contentType, size: fileBuffer.length });
+    console.log('[FILE-SERVE] Serving file:', { filePath, contentType, size: fileBuffer.length, fullPath });
 
     const response = new NextResponse(fileBuffer);
     response.headers.set('Content-Type', contentType);
