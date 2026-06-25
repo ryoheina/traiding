@@ -25,7 +25,7 @@ export async function POST(
     // Get user details
     console.log('[ADMIN-APPROVE] Fetching user details');
     const userResult = await query(
-      'SELECT email, full_name FROM users WHERE id = $1',
+      'SELECT email, full_name, approval_status FROM users WHERE id = $1',
       [userId]
     );
 
@@ -38,7 +38,7 @@ export async function POST(
     }
 
     const user = userResult.rows[0];
-    console.log('[ADMIN-APPROVE] User found:', user.email);
+    console.log('[ADMIN-APPROVE] User found:', { id: userId, email: user.email, currentStatus: user.approval_status });
 
     // Update user status
     const statusMap = {
@@ -65,7 +65,11 @@ export async function POST(
       );
     }
     
-    console.log('[ADMIN-APPROVE] User status updated successfully. New status:', updateResult.rows[0].approval_status);
+    const updatedRow = updateResult.rows[0];
+    console.log('[ADMIN-APPROVE] User status updated successfully:', { 
+      userId: updatedRow.id, 
+      statusAfter: updatedRow.approval_status 
+    });
 
     // Create audit log
     console.log('[ADMIN-APPROVE] Creating audit log');

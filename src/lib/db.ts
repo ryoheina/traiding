@@ -38,12 +38,23 @@ export async function query(text: string, params?: any[]) {
   const start = Date.now();
   try {
     const pool = getPool();
+    
+    // Log DATABASE_URL on every query call for runtime verification
+    if (process.env.DATABASE_URL) {
+      const dbUrl = new URL(process.env.DATABASE_URL);
+      console.log('[DB-QUERY] Using database:', {
+        host: dbUrl.hostname,
+        database: dbUrl.pathname.replace('/', ''),
+        query: text.substring(0, 50) + '...'
+      });
+    }
+    
     const res = await pool.query(text, params);
     const duration = Date.now() - start;
-    console.log('Executed query', { text, duration, rows: res.rowCount });
+    console.log('[DB-QUERY] Query executed:', { duration, rows: res.rowCount });
     return res;
   } catch (error) {
-    console.error('Database query error:', error);
+    console.error('[DB-QUERY] Database query error:', error);
     throw error;
   }
 }

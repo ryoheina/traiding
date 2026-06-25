@@ -13,6 +13,10 @@ export async function GET(request: NextRequest) {
     );
     
     console.log('[ADMIN-USERS] Found', usersResult.rows.length, 'users');
+    
+    // Log detailed user information for verification
+    console.log('[ADMIN-USERS] User IDs returned:', usersResult.rows.map(u => u.id));
+    console.log('[ADMIN-USERS] Approval statuses returned:', usersResult.rows.map(u => ({ id: u.id, status: u.approval_status })));
 
     // Get statistics
     const statsResult = await query(`

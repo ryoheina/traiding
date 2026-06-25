@@ -130,6 +130,11 @@ export async function POST(request: NextRequest) {
     const user = result.rows[0];
     console.log('[REGISTER] User created successfully:', { id: user.id, email: user.email, status: user.approval_status });
 
+    // Verify user count immediately after insert
+    console.log('[REGISTER] Verifying total user count after insert');
+    const countResult = await query('SELECT COUNT(*) as count FROM users');
+    console.log('[REGISTER] Total users in database after insert:', countResult.rows[0].count);
+
     // Create audit log
     console.log('[REGISTER] Creating audit log');
     await query(
