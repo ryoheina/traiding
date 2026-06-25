@@ -444,7 +444,14 @@ export default function Home() {
                   viewport={{ once: true }}
                   className="bg-white dark:bg-wolf-900 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow border border-wolf-200 dark:border-wolf-800"
                 >
-                  <div className="relative h-48 bg-gradient-to-br from-gold-400 to-gold-600">
+                  <div 
+                    className="relative h-48 bg-gradient-to-br from-gold-400 to-gold-600 cursor-pointer group"
+                    onClick={() => {
+                      if (project.rar_file_url) {
+                        window.open(project.rar_file_url, '_blank');
+                      }
+                    }}
+                  >
                     {project.image_url ? (
                       <img
                         src={project.image_url}
@@ -454,6 +461,12 @@ export default function Home() {
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <ImageIcon className="w-16 h-16 text-white/50" />
+                      </div>
+                    )}
+                    {project.rar_file_url && (
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <FileArchive className="w-12 h-12 text-white" />
+                        <span className="ml-2 text-white font-semibold">Click to Download</span>
                       </div>
                     )}
                   </div>
