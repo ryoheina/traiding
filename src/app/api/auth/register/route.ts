@@ -187,7 +187,8 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('[REGISTER] Registration successful');
-    return NextResponse.json({
+    
+    const response = NextResponse.json({
       success: true,
       user: {
         id: user.id,
@@ -196,6 +197,13 @@ export async function POST(request: NextRequest) {
         approvalStatus: user.approval_status
       }
     });
+    
+    // Disable caching for this endpoint
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    
+    return response;
 
   } catch (error) {
     console.error('[REGISTER] Error:', error);

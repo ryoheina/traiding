@@ -31,10 +31,17 @@ export async function GET(request: NextRequest) {
     
     console.log('[ADMIN-USERS] Stats:', statsResult.rows[0]);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       users: usersResult.rows,
       stats: statsResult.rows[0]
     });
+    
+    // Disable caching for this endpoint
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    
+    return response;
   } catch (error: any) {
     console.error('[ADMIN-USERS] Failed to fetch users:', error.message);
     console.error('[ADMIN-USERS] Error stack:', error.stack);

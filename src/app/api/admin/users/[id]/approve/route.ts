@@ -98,10 +98,18 @@ export async function POST(
     }
 
     console.log('[ADMIN-APPROVE] Action completed successfully');
-    return NextResponse.json({
+    
+    const response = NextResponse.json({
       success: true,
       message: `User ${action}d successfully`
     });
+    
+    // Disable caching for this endpoint
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    
+    return response;
 
   } catch (error: any) {
     console.error('[ADMIN-APPROVE] Failed to update user status:', error.message);
