@@ -15,11 +15,12 @@ export async function GET(
 
     console.log('[FILE-SERVE] Requesting file:', filePath);
     console.log('[FILE-SERVE] Full path:', fullPath);
+    console.log('[FILE-SERVE] File exists:', existsSync(fullPath));
 
     if (!existsSync(fullPath)) {
       console.log('[FILE-SERVE] File not found:', fullPath);
       return NextResponse.json(
-        { error: 'File not found' },
+        { error: 'File not found', path: filePath },
         { status: 404 }
       );
     }
@@ -47,6 +48,11 @@ export async function GET(
     const response = new NextResponse(fileBuffer);
     response.headers.set('Content-Type', contentType);
     response.headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+    
+    // For RAR files, set content-disposition to trigger download
+    if (ext === '.rar' || ext === '.zip') {
+      response.headers.set('Content-Disposition', 'attachment');
+    }
     
     return response;
   } catch (error: any) {
