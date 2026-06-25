@@ -58,14 +58,21 @@ export default function RegisterSuccessPage() {
 
           <div className="space-y-4">
             <Link
-              href="/login"
+              href="/team"
               className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-gold-500 to-gold-600 text-white font-semibold rounded-lg hover:from-gold-600 hover:to-gold-700 transition-all shadow-lg hover:shadow-xl"
             >
-              <span>Go to Login</span>
+              <span>TEAM PAGE</span>
               <ArrowRight className="w-5 h-5" />
             </Link>
 
             <div className="flex justify-center space-x-4">
+              <Link
+                href="/login"
+                className="text-wolf-600 dark:text-wolf-400 hover:text-gold-600 dark:hover:text-gold-400 transition-colors"
+              >
+                Go to Login
+              </Link>
+              <span className="text-wolf-300 dark:text-wolf-600">|</span>
               <Link
                 href="/"
                 className="text-wolf-600 dark:text-wolf-400 hover:text-gold-600 dark:hover:text-gold-400 transition-colors"
