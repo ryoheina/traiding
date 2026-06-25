@@ -64,7 +64,11 @@ export default function TeamPage() {
     
     if (userSession) {
       try {
-        const userData = JSON.parse(userSession);
+        // Decode URL-encoded cookie before parsing
+        const decodedSession = decodeURIComponent(userSession);
+        console.log('[TEAM-PAGE] Decoded session:', decodedSession);
+        
+        const userData = JSON.parse(decodedSession);
         console.log('[TEAM-PAGE] User data:', userData);
         
         if (userData.approvalStatus === 'approved') {
