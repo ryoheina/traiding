@@ -41,9 +41,11 @@ export async function POST(request: NextRequest) {
 
     // Get device and browser info
     const userAgent = request.headers.get('user-agent') || '';
-    const ip = request.headers.get('x-forwarded-for') || 
-               request.headers.get('x-real-ip') || 
-               'unknown';
+    const ipHeader = request.headers.get('x-forwarded-for') || 
+                     request.headers.get('x-real-ip') || 
+                     'unknown';
+    // Extract only the first IP if multiple are present (comma-separated)
+    const ip = ipHeader.includes(',') ? ipHeader.split(',')[0].trim() : ipHeader;
 
     // Insert user
     console.log('[REGISTER] Inserting user into database');

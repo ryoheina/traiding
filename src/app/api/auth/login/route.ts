@@ -79,13 +79,19 @@ export async function POST(request: NextRequest) {
 
     // Create audit log
     console.log('[LOGIN] Creating audit log');
+    const ipHeader = request.headers.get('x-forwarded-for') || 
+                     request.headers.get('x-real-ip') || 
+                     'unknown';
+    const ip = ipHeader.includes(',') ? ipHeader.split(',')[0].trim() : ipHeader;
     await query(
-      `INSERT INTO audit_logs (user_id, action, details)
-       VALUES ($1, $2, $3)`,
+      `INSERT INTO audit_logs (user_id, action, details, ip_address, user_agent)
+       VALUES ($1, $2, $3, $4, $5)`,
       [
         user.id,
         'USER_LOGIN',
-        JSON.stringify({ email: user.email })
+        JSON.stringify({ email: user.email }),
+        ip,
+        request.headers.get('user-agent') || ''
       ]
     );
 
