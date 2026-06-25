@@ -45,10 +45,15 @@ export async function POST(request: NextRequest) {
     // Write file
     await writeFile(filepath, buffer);
     
+    // Verify file was written
+    if (!existsSync(filepath)) {
+      throw new Error('File was not written successfully');
+    }
+    
     // Return public URL
     const fileUrl = `/uploads/${type}/${filename}`;
     
-    console.log('[UPLOAD] File uploaded successfully:', { filename, type, fileUrl });
+    console.log('[UPLOAD] File uploaded successfully:', { filename, type, fileUrl, filepath });
     
     const response = NextResponse.json({
       success: true,

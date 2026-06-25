@@ -254,6 +254,11 @@ export default function AdminDashboard() {
         if (uploadResponse.ok) {
           const uploadData = await uploadResponse.json();
           imageUrl = uploadData.fileUrl;
+          console.log('[PROJECT] Image uploaded:', uploadData);
+        } else {
+          const errorData = await uploadResponse.json();
+          console.error('[PROJECT] Image upload failed:', errorData);
+          throw new Error(errorData.error || 'Failed to upload image');
         }
         setUploadingImage(false);
       }
@@ -272,6 +277,11 @@ export default function AdminDashboard() {
         if (uploadResponse.ok) {
           const uploadData = await uploadResponse.json();
           rarUrl = uploadData.fileUrl;
+          console.log('[PROJECT] RAR uploaded:', uploadData);
+        } else {
+          const errorData = await uploadResponse.json();
+          console.error('[PROJECT] RAR upload failed:', errorData);
+          throw new Error(errorData.error || 'Failed to upload RAR file');
         }
         setUploadingRar(false);
       }
