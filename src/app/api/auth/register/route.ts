@@ -164,14 +164,19 @@ export async function POST(request: NextRequest) {
 
     // Send email notification to admin (optional - don't fail if this doesn't work)
     try {
-      console.log('[REGISTER] Sending email notification');
-      await sendNewRegistrationNotification(
+      console.log('[REGISTER] Sending email notification to admin:', process.env.ADMIN_EMAIL);
+      const emailSent = await sendNewRegistrationNotification(
         process.env.ADMIN_EMAIL || '',
         user.email,
         user.full_name
       );
-    } catch (emailError) {
-      console.error('[REGISTER] Failed to send email notification:', emailError);
+      if (emailSent) {
+        console.log('[REGISTER] Admin email notification sent successfully');
+      } else {
+        console.log('[REGISTER] Admin email notification skipped (SMTP not configured or failed)');
+      }
+    } catch (emailError: any) {
+      console.error('[REGISTER] Failed to send email notification:', emailError.message);
     }
 
     console.log('[REGISTER] Registration successful');

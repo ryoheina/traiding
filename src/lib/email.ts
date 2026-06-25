@@ -1,20 +1,57 @@
 import nodemailer from 'nodemailer';
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: false,
-  auth: {
+// Check if SMTP is configured
+function isSmtpConfigured(): boolean {
+  return !!(
+    process.env.SMTP_HOST &&
+    process.env.SMTP_USER &&
+    process.env.SMTP_PASSWORD
+  );
+}
+
+// Create transporter only if SMTP is configured
+function getTransporter() {
+  if (!isSmtpConfigured()) {
+    console.log('[EMAIL] SMTP not configured - email sending disabled');
+    return null;
+  }
+
+  console.log('[EMAIL] Creating SMTP transporter with config:', {
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT || '587',
     user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASSWORD,
-  },
-});
+  });
+
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: parseInt(process.env.SMTP_PORT || '587'),
+    secure: false,
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASSWORD,
+    },
+  });
+}
 
 export async function sendApprovalEmail(
   email: string,
   fullName: string,
   status: 'approved' | 'rejected' | 'suspended'
 ) {
+  console.log('[EMAIL] sendApprovalEmail started:', { email, fullName, status });
+
+  // Check if SMTP is configured
+  if (!isSmtpConfigured()) {
+    console.log('[EMAIL] SMTP not configured - skipping email send');
+    return false;
+  }
+
+  const transporter = getTransporter();
+  if (!transporter) {
+    console.log('[EMAIL] No transporter available - skipping email send');
+    return false;
+  }
+
   const subject = status === 'approved' 
     ? 'Welcome to Wolf Trading - Account Approved!'
     : status === 'rejected'
@@ -108,15 +145,18 @@ export async function sendApprovalEmail(
     `;
 
   try {
+    console.log('[EMAIL] Sending email to:', email);
     await transporter.sendMail({
       from: process.env.SMTP_FROM || 'noreply@wolftrading.com',
       to: email,
       subject,
       html,
     });
+    console.log('[EMAIL] Email sent successfully to:', email);
     return true;
-  } catch (error) {
-    console.error('Failed to send email:', error);
+  } catch (error: any) {
+    console.error('[EMAIL] Failed to send email:', error.message);
+    console.error('[EMAIL] Error details:', error);
     return false;
   }
 }
@@ -126,6 +166,20 @@ export async function sendNewRegistrationNotification(
   userEmail: string,
   fullName: string
 ) {
+  console.log('[EMAIL] sendNewRegistrationNotification started:', { adminEmail, userEmail, fullName });
+
+  // Check if SMTP is configured
+  if (!isSmtpConfigured()) {
+    console.log('[EMAIL] SMTP not configured - skipping email send');
+    return false;
+  }
+
+  const transporter = getTransporter();
+  if (!transporter) {
+    console.log('[EMAIL] No transporter available - skipping email send');
+    return false;
+  }
+
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); padding: 30px; border-radius: 10px 10px 0 0;">
@@ -156,15 +210,18 @@ export async function sendNewRegistrationNotification(
   `;
 
   try {
+    console.log('[EMAIL] Sending registration notification to:', adminEmail);
     await transporter.sendMail({
       from: process.env.SMTP_FROM || 'noreply@wolftrading.com',
       to: adminEmail,
       subject: 'New User Registration - Wolf Trading',
       html,
     });
+    console.log('[EMAIL] Registration notification sent successfully to:', adminEmail);
     return true;
-  } catch (error) {
-    console.error('Failed to send notification email:', error);
+  } catch (error: any) {
+    console.error('[EMAIL] Failed to send notification email:', error.message);
+    console.error('[EMAIL] Error details:', error);
     return false;
   }
 }

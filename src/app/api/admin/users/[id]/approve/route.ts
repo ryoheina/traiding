@@ -69,9 +69,13 @@ export async function POST(
 
     // Send email notification to user about status change (optional - don't fail if this doesn't work)
     try {
-      console.log('[ADMIN-APPROVE] Sending email notification');
-      await sendApprovalEmail(user.email, user.full_name, action as 'approved' | 'rejected' | 'suspended');
-      console.log('[ADMIN-APPROVE] Email sent successfully');
+      console.log('[ADMIN-APPROVE] Sending email notification to user:', user.email);
+      const emailSent = await sendApprovalEmail(user.email, user.full_name, action as 'approved' | 'rejected' | 'suspended');
+      if (emailSent) {
+        console.log('[ADMIN-APPROVE] Email notification sent successfully to:', user.email);
+      } else {
+        console.log('[ADMIN-APPROVE] Email notification skipped (SMTP not configured or failed)');
+      }
     } catch (emailError: any) {
       console.error('[ADMIN-APPROVE] Failed to send approval email:', emailError.message);
     }
