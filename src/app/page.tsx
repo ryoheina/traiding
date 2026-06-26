@@ -460,17 +460,19 @@ export default function Home() {
                   <div className="p-6">
                     <h3 className="text-xl font-bold text-wolf-900 dark:text-white mb-2">{project.title}</h3>
                     <p className="text-wolf-600 dark:text-wolf-400 text-sm line-clamp-2 mb-4">{project.description}</p>
-                    {project.rar_file_url && (
-                      <button
-                        onClick={() => {
+                    <button
+                      onClick={() => {
+                        if (project.rar_file_url) {
                           window.open(project.rar_file_url, '_blank');
-                        }}
-                        className="w-full bg-wolf-900 dark:bg-wolf-100 text-white dark:text-wolf-900 py-2 px-4 rounded-lg font-semibold hover:bg-wolf-800 dark:hover:bg-wolf-200 transition-colors flex items-center justify-center gap-2"
-                      >
-                        <FileArchive className="w-5 h-5" />
-                        Download RAR File
-                      </button>
-                    )}
+                        } else {
+                          alert('No RAR file available for this project');
+                        }
+                      }}
+                      className="w-full bg-wolf-900 dark:bg-wolf-100 text-white dark:text-wolf-900 py-2 px-4 rounded-lg font-semibold hover:bg-wolf-800 dark:hover:bg-wolf-200 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <FileArchive className="w-5 h-5" />
+                      Download RAR File
+                    </button>
                   </div>
                 </motion.div>
               ))}
