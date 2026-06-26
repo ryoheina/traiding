@@ -532,7 +532,7 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
                 {/* Project Content */}
                 <div className="p-5">
                   <h3 className="text-base font-semibold text-gray-900 mb-2 line-clamp-1">{project.title}</h3>
-                  <p className="text-sm text-gray-500 line-clamp-2 mb-4 min-h-[2.5rem]">{project.description}</p>
+                  <p className="text-sm text-gray-500 line-clamp-5 mb-4 min-h-[5rem]">{project.description}</p>
                   
                   <button
                     onClick={() => {
