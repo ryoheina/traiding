@@ -59,6 +59,11 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
   // Image carousel state
   const [currentImageIndices, setCurrentImageIndices] = useState<Record<number, number>>({});
   
+  // Image lightbox state
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxProject, setLightboxProject] = useState<Project | null>(null);
+  const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
+  
   // Form state
   const [formData, setFormData] = useState({
     title: '',
@@ -410,7 +415,12 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
                       <img
                         src={project.images[currentImageIndices[project.id] || 0]?.image_url}
                         alt={project.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
+                        onClick={() => {
+                          setLightboxProject(project);
+                          setLightboxImageIndex(currentImageIndices[project.id] || 0);
+                          setLightboxOpen(true);
+                        }}
                       />
                       
                       {/* Carousel Navigation */}
@@ -465,7 +475,12 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
                     <img
                       src={project.image_url}
                       alt={project.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
+                      onClick={() => {
+                        setLightboxProject(project);
+                        setLightboxImageIndex(0);
+                        setLightboxOpen(true);
+                      }}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
@@ -694,6 +709,69 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
           }`}
         >
           {notification.message}
+        </motion.div>
+      )}
+
+      {/* Image Lightbox */}
+      {lightboxOpen && lightboxProject && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+          onClick={() => setLightboxOpen(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0.9 }}
+            className="relative max-w-5xl max-h-[90vh] w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setLightboxOpen(false)}
+              className="absolute -top-12 right-0 p-2 text-white hover:text-gray-300 transition-colors"
+            >
+              <X className="w-8 h-8" />
+            </button>
+
+            {/* Image */}
+            <img
+              src={
+                lightboxProject.images && lightboxProject.images.length > 0
+                  ? lightboxProject.images[lightboxImageIndex]?.image_url
+                  : lightboxProject.image_url
+              }
+              alt={lightboxProject.title}
+              className="w-full h-full object-contain max-h-[85vh] rounded-lg"
+            />
+
+            {/* Navigation Arrows */}
+            {lightboxProject.images && lightboxProject.images.length > 1 && (
+              <>
+                <button
+                  onClick={() => setLightboxImageIndex(prev => Math.max(0, prev - 1))}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/20 hover:bg-white/30 text-white rounded-full transition-colors"
+                >
+                  <ChevronDown className="w-6 h-6 -rotate-90" />
+                </button>
+                <button
+                  onClick={() => setLightboxImageIndex(prev => Math.min((lightboxProject.images?.length || 1) - 1, prev + 1))}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/20 hover:bg-white/30 text-white rounded-full transition-colors"
+                >
+                  <ChevronDown className="w-6 h-6 rotate-90" />
+                </button>
+              </>
+            )}
+
+            {/* Image Counter */}
+            {lightboxProject.images && lightboxProject.images.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-black/50 text-white rounded-full text-sm">
+                {lightboxImageIndex + 1} / {lightboxProject.images.length}
+              </div>
+            )}
+          </motion.div>
         </motion.div>
       )}
     </div>
