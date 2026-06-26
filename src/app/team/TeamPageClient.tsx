@@ -69,6 +69,7 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
   });
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingRar, setUploadingRar] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     fetchProjects();
@@ -156,6 +157,12 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (isSubmitting || uploadingImage || uploadingRar) {
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
     try {
       let imageUrl = formData.images.length > 0 ? formData.images[0] : formData.image_url;
       let rarUrl = formData.rar_file_url;
@@ -198,6 +205,12 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
         setEditingProject(null);
         setShowAdminPanel(false);
         fetchProjects();
+        
+        // Clear file inputs
+        const imageInput = document.getElementById('image-file') as HTMLInputElement;
+        if (imageInput) imageInput.value = '';
+        const rarInput = document.getElementById('rar-file') as HTMLInputElement;
+        if (rarInput) rarInput.value = '';
       } else {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to save project');
@@ -205,6 +218,8 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
     } catch (error: any) {
       console.error('Failed to save project:', error);
       setNotification({ type: 'error', message: error.message || 'Failed to save project' });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -598,7 +613,9 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
                   multiple
                   onChange={(e) => {
                     const files = Array.from(e.target.files || []);
-                    handleMultipleImageUpload(files);
+                    if (files.length > 0) {
+                      handleMultipleImageUpload(files);
+                    }
                   }}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                 />
@@ -653,10 +670,10 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
                 </button>
                 <button
                   type="submit"
-                  disabled={uploadingImage || uploadingRar}
+                  disabled={uploadingImage || uploadingRar || isSubmitting}
                   className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
                 >
-                  {editingProject ? 'Update' : 'Create'}
+                  {isSubmitting ? 'Saving...' : (editingProject ? 'Update' : 'Create')}
                 </button>
               </div>
             </form>
