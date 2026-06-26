@@ -451,7 +451,11 @@ export default function Home() {
                         // Create a download link to force download
                         const link = document.createElement('a');
                         link.href = project.rar_file_url;
-                        link.download = '';
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                        // Extract filename from URL for download attribute
+                        const filename = project.rar_file_url.split('/').pop();
+                        link.download = filename || 'download.rar';
                         document.body.appendChild(link);
                         link.click();
                         document.body.removeChild(link);

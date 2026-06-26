@@ -64,9 +64,10 @@ export async function GET(
     response.headers.set('Content-Type', contentType);
     response.headers.set('Cache-Control', 'public, max-age=31536000, immutable');
     
-    // For RAR files, set content-disposition to trigger download
+    // For RAR files, set content-disposition to trigger download with filename
     if (ext === '.rar' || ext === '.zip') {
-      response.headers.set('Content-Disposition', 'attachment');
+      const filename = path.basename(filePath);
+      response.headers.set('Content-Disposition', `attachment; filename="${filename}"`);
     }
     
     return response;
