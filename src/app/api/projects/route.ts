@@ -16,10 +16,27 @@ export async function GET(request: NextRequest) {
        ORDER BY created_at DESC`
     );
     
-    console.log('[PROJECTS] Found', result.rows.length, 'projects');
+    // Fetch images for each project
+    const projectsWithImages = await Promise.all(
+      result.rows.map(async (project) => {
+        const imagesResult = await query(
+          `SELECT id, image_url, display_order
+           FROM project_images
+           WHERE project_id = $1
+           ORDER BY display_order ASC`,
+          [project.id]
+        );
+        return {
+          ...project,
+          images: imagesResult.rows
+        };
+      })
+    );
+    
+    console.log('[PROJECTS] Found', projectsWithImages.length, 'projects');
     
     const response = NextResponse.json({
-      projects: result.rows
+      projects: projectsWithImages
     });
     
     response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
@@ -113,7 +130,7 @@ export async function POST(request: NextRequest) {
     console.log('[PROJECTS] Admin verified:', user.email);
     
     const body = await request.json();
-    const { title, description, image_url, rar_file_url, status } = body;
+    const { title, description, image_url, rar_file_url, status, images } = body;
     
     if (!title) {
       return NextResponse.json(
@@ -128,6 +145,19 @@ export async function POST(request: NextRequest) {
        RETURNING id, title, description, image_url, rar_file_url, status, created_at`,
       [title, description || null, image_url || null, rar_file_url || null, status || 'active']
     );
+    
+    const projectId = result.rows[0].id;
+    
+    // Insert multiple images if provided
+    if (images && Array.isArray(images) && images.length > 0) {
+      for (let i = 0; i < images.length; i++) {
+        await query(
+          `INSERT INTO project_images (project_id, image_url, display_order)
+           VALUES ($1, $2, $3)`,
+          [projectId, images[i], i]
+        );
+      }
+    }
     
     console.log('[PROJECTS] Project created:', result.rows[0]);
     

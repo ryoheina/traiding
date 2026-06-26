@@ -64,7 +64,7 @@ export async function PUT(
     console.log('[PROJECTS] Admin verified:', auth.user.email);
     
     const body = await request.json();
-    const { title, description, image_url, rar_file_url, status } = body;
+    const { title, description, image_url, rar_file_url, status, images } = body;
     const projectId = parseInt(params.id);
     
     if (isNaN(projectId)) {
@@ -91,6 +91,21 @@ export async function PUT(
         { error: 'Project not found' },
         { status: 404 }
       );
+    }
+    
+    // Update images if provided
+    if (images && Array.isArray(images)) {
+      // Delete existing images
+      await query('DELETE FROM project_images WHERE project_id = $1', [projectId]);
+      
+      // Insert new images
+      for (let i = 0; i < images.length; i++) {
+        await query(
+          `INSERT INTO project_images (project_id, image_url, display_order)
+           VALUES ($1, $2, $3)`,
+          [projectId, images[i], i]
+        );
+      }
     }
     
     console.log('[PROJECTS] Project updated:', result.rows[0]);

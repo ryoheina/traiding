@@ -67,6 +67,15 @@ CREATE TABLE IF NOT EXISTS projects (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Project Images (for multiple images per project)
+CREATE TABLE IF NOT EXISTS project_images (
+  id SERIAL PRIMARY KEY,
+  project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
+  image_url VARCHAR(500) NOT NULL,
+  display_order INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Educational materials
 CREATE TABLE IF NOT EXISTS educational_materials (
   id SERIAL PRIMARY KEY,

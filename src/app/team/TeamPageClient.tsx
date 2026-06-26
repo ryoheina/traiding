@@ -30,6 +30,11 @@ interface Project {
   status: string;
   created_at: string;
   updated_at: string;
+  images?: Array<{
+    id: number;
+    image_url: string;
+    display_order: number;
+  }>;
 }
 
 interface TeamPageClientProps {
@@ -51,12 +56,16 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'name'>('newest');
   
+  // Image carousel state
+  const [currentImageIndices, setCurrentImageIndices] = useState<Record<number, number>>({});
+  
   // Form state
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     image_url: '',
-    rar_file_url: ''
+    rar_file_url: '',
+    images: [] as string[]
   });
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingRar, setUploadingRar] = useState(false);
@@ -126,20 +135,30 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
     return data.fileUrl;
   };
 
+  const handleMultipleImageUpload = async (files: File[]) => {
+    setUploadingImage(true);
+    try {
+      const uploadedUrls = await Promise.all(
+        files.map(file => handleFileUpload(file, 'image'))
+      );
+      setFormData({
+        ...formData,
+        images: [...formData.images, ...uploadedUrls]
+      });
+    } catch (error) {
+      console.error('Failed to upload images:', error);
+      setNotification({ type: 'error', message: 'Failed to upload images' });
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
-      let imageUrl = formData.image_url;
+      let imageUrl = formData.images.length > 0 ? formData.images[0] : formData.image_url;
       let rarUrl = formData.rar_file_url;
-
-      // Handle image upload if file provided
-      const imageInput = document.getElementById('image-file') as HTMLInputElement;
-      if (imageInput?.files?.[0]) {
-        setUploadingImage(true);
-        imageUrl = await handleFileUpload(imageInput.files[0], 'image');
-        setUploadingImage(false);
-      }
 
       // Handle RAR upload if file provided
       const rarInput = document.getElementById('rar-file') as HTMLInputElement;
@@ -154,7 +173,8 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
         description: formData.description,
         image_url: imageUrl,
         rar_file_url: rarUrl,
-        status: 'active'
+        status: 'active',
+        images: formData.images
       };
 
       let response;
@@ -174,7 +194,7 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
 
       if (response.ok) {
         setNotification({ type: 'success', message: editingProject ? 'Project updated successfully' : 'Project created successfully' });
-        setFormData({ title: '', description: '', image_url: '', rar_file_url: '' });
+        setFormData({ title: '', description: '', image_url: '', rar_file_url: '', images: [] });
         setEditingProject(null);
         setShowAdminPanel(false);
         fetchProjects();
@@ -264,7 +284,7 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
               <button
                 onClick={() => {
                   setEditingProject(null);
-                  setFormData({ title: '', description: '', image_url: '', rar_file_url: '' });
+                  setFormData({ title: '', description: '', image_url: '', rar_file_url: '', images: [] });
                   setShowAdminPanel(true);
                 }}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors shadow-sm"
@@ -348,7 +368,7 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
               <button
                 onClick={() => {
                   setEditingProject(null);
-                  setFormData({ title: '', description: '', image_url: '', rar_file_url: '' });
+                  setFormData({ title: '', description: '', image_url: '', rar_file_url: '', images: [] });
                   setShowAdminPanel(true);
                 }}
                 className="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors"
@@ -368,9 +388,65 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
                 transition={{ duration: 0.2 }}
                 className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md hover:border-gray-300 transition-all duration-200 group"
               >
-                {/* Project Image */}
+                {/* Project Image Carousel */}
                 <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200">
-                  {project.image_url ? (
+                  {project.images && project.images.length > 0 ? (
+                    <>
+                      <img
+                        src={project.images[currentImageIndices[project.id] || 0]?.image_url}
+                        alt={project.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      
+                      {/* Carousel Navigation */}
+                      {project.images.length > 1 && (
+                        <>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCurrentImageIndices(prev => ({
+                                ...prev,
+                                [project.id]: Math.max(0, (prev[project.id] || 0) - 1)
+                              }));
+                            }}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 bg-white/90 backdrop-blur-sm rounded-full text-gray-700 hover:bg-white hover:text-gray-900 transition-all shadow-sm"
+                          >
+                            <ChevronDown className="w-4 h-4 -rotate-90" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCurrentImageIndices(prev => ({
+                                ...prev,
+                                [project.id]: Math.min((project.images?.length || 1) - 1, (prev[project.id] || 0) + 1)
+                              }));
+                            }}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-white/90 backdrop-blur-sm rounded-full text-gray-700 hover:bg-white hover:text-gray-900 transition-all shadow-sm"
+                          >
+                            <ChevronDown className="w-4 h-4 rotate-90" />
+                          </button>
+                          
+                          {/* Image Indicators */}
+                          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                            {project.images.map((_, idx) => (
+                              <button
+                                key={idx}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setCurrentImageIndices(prev => ({ ...prev, [project.id]: idx }));
+                                }}
+                                className={`w-1.5 h-1.5 rounded-full transition-all ${
+                                  idx === (currentImageIndices[project.id] || 0)
+                                    ? 'bg-white w-4'
+                                    : 'bg-white/50'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </>
+                  ) : project.image_url ? (
                     <img
                       src={project.image_url}
                       alt={project.title}
@@ -401,7 +477,8 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
                             title: project.title,
                             description: project.description,
                             image_url: project.image_url,
-                            rar_file_url: project.rar_file_url
+                            rar_file_url: project.rar_file_url,
+                            images: project.images?.map(img => img.image_url) || []
                           });
                           setShowAdminPanel(true);
                         }}
@@ -512,16 +589,42 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Project Image
+                  Project Images (Multiple)
                 </label>
                 <input
                   type="file"
                   id="image-file"
                   accept="image/*"
+                  multiple
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files || []);
+                    handleMultipleImageUpload(files);
+                  }}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                 />
+                {formData.images.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {formData.images.map((url, idx) => (
+                      <div key={idx} className="relative w-16 h-16">
+                        <img src={url} alt={`Preview ${idx}`} className="w-full h-full object-cover rounded" />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFormData({
+                              ...formData,
+                              images: formData.images.filter((_, i) => i !== idx)
+                            });
+                          }}
+                          className="absolute -top-1 -right-1 p-0.5 bg-red-500 text-white rounded-full text-xs hover:bg-red-600"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 {uploadingImage && (
-                  <p className="text-sm text-gray-500 mt-1">Uploading image...</p>
+                  <p className="text-sm text-gray-500 mt-1">Uploading images...</p>
                 )}
               </div>
 
