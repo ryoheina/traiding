@@ -317,14 +317,6 @@ export default function Home() {
                     <span className="text-sm"><span className="font-semibold text-white">Expertise:</span> {member.expertise}</span>
                   </div>
                 </div>
-                <div className="mt-6 flex justify-center gap-3">
-                  <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-gray-400 hover:bg-amber-500 hover:text-white transition-all">
-                    <Twitter className="w-4 h-4" />
-                  </a>
-                  <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-gray-400 hover:bg-amber-500 hover:text-white transition-all">
-                    <Linkedin className="w-4 h-4" />
-                  </a>
-                </div>
               </motion.div>
             ))}
           </div>
@@ -363,7 +355,7 @@ export default function Home() {
                 className="text-center group"
               >
                 <div className="w-28 h-28 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-amber-500/30 group-hover:shadow-amber-500/50 transition-all">
-                  <span className="text-4xl font-bold text-white">{achievement.value}</span>
+                  <span className="text-3xl font-bold text-white">{achievement.value}</span>
                 </div>
                 <p className="text-white font-semibold text-lg">{achievement.label}</p>
               </motion.div>
