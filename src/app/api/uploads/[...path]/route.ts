@@ -12,16 +12,8 @@ export async function GET(
   try {
     const filePath = params.path.join('/');
     
-    // Use persistent storage for deployment platforms
-    // Render: mounts persistent disks to /var/lib/data
-    // Railway: mounts volumes to /data
-    const baseDir = process.env.RENDER_PERSISTENT_DISK_PATH || 
-                   process.env.RAILWAY_VOLUME_MOUNT_PATH || 
-                   process.cwd();
-    
     // Try multiple possible paths
     const possiblePaths = [
-      path.join(baseDir, 'uploads', filePath),
       path.join(process.cwd(), 'public', 'uploads', filePath),
       path.join(process.cwd(), 'uploads', filePath),
       path.join(process.cwd(), '.next', 'public', 'uploads', filePath),

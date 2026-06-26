@@ -32,16 +32,11 @@ export async function POST(request: NextRequest) {
     
     console.log('[UPLOAD] File size:', buffer.length, 'bytes');
     
-    // Use persistent storage for deployment platforms
-    // Render: mounts persistent disks to /var/lib/data
-    // Railway: mounts volumes to /data
-    const baseDir = process.env.RENDER_PERSISTENT_DISK_PATH || 
-                   process.env.RAILWAY_VOLUME_MOUNT_PATH || 
-                   process.cwd();
-    const uploadDir = path.join(baseDir, 'uploads', type);
+    // Use local storage
+    const baseDir = process.cwd();
+    const uploadDir = path.join(baseDir, 'public', 'uploads', type);
     
     console.log('[UPLOAD] Upload directory:', uploadDir);
-    console.log('[UPLOAD] Base directory:', baseDir);
     console.log('[UPLOAD] Directory exists before:', existsSync(uploadDir));
     
     if (!existsSync(uploadDir)) {
@@ -51,7 +46,6 @@ export async function POST(request: NextRequest) {
     
     console.log('[UPLOAD] Directory exists after:', existsSync(uploadDir));
     
-    // Generate unique filename
     const timestamp = Date.now();
     const originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
     const filename = `${timestamp}_${originalName}`;
@@ -59,10 +53,8 @@ export async function POST(request: NextRequest) {
     
     console.log('[UPLOAD] Writing file to:', filepath);
     
-    // Write file
     await writeFile(filepath, buffer);
     
-    // Verify file was written
     if (!existsSync(filepath)) {
       console.error('[UPLOAD] File was not written successfully');
       throw new Error('File was not written successfully');
@@ -70,15 +62,14 @@ export async function POST(request: NextRequest) {
     
     console.log('[UPLOAD] File verified to exist:', existsSync(filepath));
     
-    // Return public URL - use relative URL to work with any domain
     const fileUrl = `/api/uploads/${type}/${filename}`;
     
-    console.log('[UPLOAD] File uploaded successfully:', { filename, type, fileUrl, filepath });
+    console.log('[UPLOAD] File uploaded locally:', { fileUrl, filepath });
     
     const response = NextResponse.json({
       success: true,
       fileUrl,
-      filename,
+      filename: file.name,
       type
     });
     
