@@ -47,6 +47,19 @@ export async function ensureProjectsTable() {
       `);
       
       console.log('[MIGRATION] Trigger created successfully');
+      
+      // Create project_images table
+      console.log('[MIGRATION] Creating project_images table...');
+      await query(`
+        CREATE TABLE project_images (
+          id SERIAL PRIMARY KEY,
+          project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
+          image_url VARCHAR(500) NOT NULL,
+          display_order INTEGER DEFAULT 0,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+      console.log('[MIGRATION] Project images table created successfully');
     } else {
       console.log('[MIGRATION] Checking if columns exist...');
       const columns = await query(`
@@ -72,6 +85,28 @@ export async function ensureProjectsTable() {
           }
         }
         console.log('[MIGRATION] Missing columns added');
+      }
+      
+      // Check if project_images table exists
+      const projectImagesExists = await query(`
+        SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_name = 'project_images'
+        );
+      `);
+      
+      if (!projectImagesExists.rows[0].exists) {
+        console.log('[MIGRATION] Creating project_images table...');
+        await query(`
+          CREATE TABLE project_images (
+            id SERIAL PRIMARY KEY,
+            project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
+            image_url VARCHAR(500) NOT NULL,
+            display_order INTEGER DEFAULT 0,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          );
+        `);
+        console.log('[MIGRATION] Project images table created successfully');
       }
     }
     
