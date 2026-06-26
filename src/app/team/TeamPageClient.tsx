@@ -9,7 +9,16 @@ import {
   X, 
   Upload,
   Image as ImageIcon,
-  FileArchive
+  FileArchive,
+  Search,
+  Filter,
+  MoreVertical,
+  ChevronDown,
+  Calendar,
+  Download,
+  FolderOpen,
+  Sparkles,
+  CheckCircle2
 } from "lucide-react";
 
 interface Project {
@@ -30,10 +39,17 @@ interface TeamPageClientProps {
 
 export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientProps) {
   const [projects, setProjects] = useState<Project[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  
+  // Search, filter, sort state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'name'>('newest');
   
   // Form state
   const [formData, setFormData] = useState({
@@ -48,6 +64,35 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
   useEffect(() => {
     fetchProjects();
   }, []);
+
+  useEffect(() => {
+    // Filter and sort projects
+    let filtered = projects;
+    
+    // Apply search filter
+    if (searchQuery) {
+      filtered = filtered.filter(project =>
+        project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        project.description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    // Apply sorting
+    filtered = [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case 'newest':
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        case 'oldest':
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        case 'name':
+          return a.title.localeCompare(b.title);
+        default:
+          return 0;
+      }
+    });
+    
+    setFilteredProjects(filtered);
+  }, [projects, searchQuery, sortBy]);
 
   const fetchProjects = async () => {
     try {
@@ -167,159 +212,257 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white" />
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Header Skeleton */}
+          <div className="mb-8">
+            <div className="h-8 bg-gray-200 rounded w-48 mb-2 animate-pulse" />
+            <div className="h-4 bg-gray-200 rounded w-64 animate-pulse" />
+          </div>
+          
+          {/* Controls Skeleton */}
+          <div className="flex gap-4 mb-8">
+            <div className="h-10 bg-gray-200 rounded-lg w-64 animate-pulse" />
+            <div className="h-10 bg-gray-200 rounded-lg w-32 animate-pulse" />
+          </div>
+          
+          {/* Grid Skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="h-48 bg-gray-200 animate-pulse" />
+                <div className="p-5 space-y-3">
+                  <div className="h-5 bg-gray-200 rounded w-3/4 animate-pulse" />
+                  <div className="h-4 bg-gray-200 rounded w-full animate-pulse" />
+                  <div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse" />
+                  <div className="h-10 bg-gray-200 rounded-lg animate-pulse" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 relative overflow-hidden">
-      {/* 3D Blue Animation Background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-blue-500/10 to-blue-700/20 animate-pulse" />
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-400/30 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-300/30 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '6s' }} />
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
-        
-        {/* Grid lines effect */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `
-              linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
-            `,
-            backgroundSize: '50px 50px',
-            animation: 'gridMove 20s linear infinite'
-          }} />
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div>
+              <h1 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                <FolderOpen className="w-5 h-5 text-gray-500" />
+                Team Projects
+              </h1>
+              <p className="text-sm text-gray-500 mt-0.5">
+                {filteredProjects.length} {filteredProjects.length === 1 ? 'project' : 'projects'}
+              </p>
+            </div>
+            {isAdmin && (
+              <button
+                onClick={() => {
+                  setEditingProject(null);
+                  setFormData({ title: '', description: '', image_url: '', rar_file_url: '' });
+                  setShowAdminPanel(true);
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors shadow-sm"
+              >
+                <Plus className="w-4 h-4" />
+                Add Project
+              </button>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* Controls Bar */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            {/* Search */}
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search projects..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all"
+              />
+            </div>
+
+            {/* Filter & Sort */}
+            <div className="flex items-center gap-3">
+              {/* Sort Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowSortDropdown(!showSortDropdown)}
+                  className="inline-flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+                  <Calendar className="w-4 h-4" />
+                  <span>Sort</span>
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+                {showSortDropdown && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                    <button
+                      onClick={() => { setSortBy('newest'); setShowSortDropdown(false); }}
+                      className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${sortBy === 'newest' ? 'bg-gray-50 text-gray-900' : 'text-gray-700'}`}
+                    >
+                      Newest first
+                    </button>
+                    <button
+                      onClick={() => { setSortBy('oldest'); setShowSortDropdown(false); }}
+                      className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${sortBy === 'oldest' ? 'bg-gray-50 text-gray-900' : 'text-gray-700'}`}
+                    >
+                      Oldest first
+                    </button>
+                    <button
+                      onClick={() => { setSortBy('name'); setShowSortDropdown(false); }}
+                      className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${sortBy === 'name' ? 'bg-gray-50 text-gray-900' : 'text-gray-700'}`}
+                    >
+                      Name A-Z
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="relative z-10">
-        {/* Header */}
-        <header className="bg-white/10 backdrop-blur-lg border-b border-white/20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h1 className="text-3xl font-bold text-white">Team Projects</h1>
-                <p className="text-blue-200 mt-1">View and download project resources</p>
-              </div>
-              {isAdmin && (
-                <button
-                  onClick={() => {
-                    setEditingProject(null);
-                    setFormData({ title: '', description: '', image_url: '', rar_file_url: '' });
-                    setShowAdminPanel(true);
-                  }}
-                  className="flex items-center space-x-2 px-4 py-2 bg-white text-blue-900 font-semibold rounded-lg hover:bg-blue-100 transition-colors"
-                >
-                  <Plus className="w-5 h-5" />
-                  <span>Add Project</span>
-                </button>
-              )}
+      {/* Projects Grid */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {filteredProjects.length === 0 ? (
+          <div className="text-center py-20">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-2xl mb-4">
+              <FolderOpen className="w-8 h-8 text-gray-400" />
             </div>
-          </div>
-        </header>
-
-        {/* Projects Grid */}
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {projects.length === 0 ? (
-            <div className="text-center py-20">
-              <FileArchive className="w-16 h-16 text-blue-300 mx-auto mb-4" />
-              <p className="text-blue-200 text-lg">No projects available yet</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {projects.map((project) => (
-                <motion.div
-                  key={project.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-white/10 backdrop-blur-lg rounded-xl overflow-hidden border border-white/20 hover:border-white/40 transition-all group"
-                >
-                  <div className="relative h-48 bg-gradient-to-br from-blue-400 to-blue-600">
-                    {project.image_url ? (
-                      <img
-                        src={project.image_url}
-                        alt={project.title}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <ImageIcon className="w-16 h-16 text-white/50" />
-                      </div>
-                    )}
-                    {isAdmin && (
-                      <div className="absolute top-2 right-2 flex space-x-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingProject(project);
-                            setFormData({
-                              title: project.title,
-                              description: project.description,
-                              image_url: project.image_url,
-                              rar_file_url: project.rar_file_url
-                            });
-                            setShowAdminPanel(true);
-                          }}
-                          className="p-2 bg-white/90 text-blue-900 rounded-lg hover:bg-white transition-colors"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(project.id);
-                          }}
-                          className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    <h3 className="text-lg font-semibold text-white mb-2">{project.title}</h3>
-                    <p className="text-blue-200 text-sm line-clamp-2 mb-4">{project.description}</p>
-                    <button
-                      onClick={() => {
-                        if (project.rar_file_url) {
-                          window.open(project.rar_file_url, '_blank');
-                        } else {
-                          alert('No RAR file available for this project');
-                        }
-                      }}
-                      className="w-full bg-white text-blue-900 py-2 px-4 rounded-lg font-semibold hover:bg-blue-100 transition-colors flex items-center justify-center gap-2"
-                    >
-                      <FileArchive className="w-5 h-5" />
-                      Download Project
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          )}
-        </main>
-
-        {/* Footer */}
-        <footer className="bg-white/10 backdrop-blur-lg border-t border-white/20 mt-auto">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
-              <p className="text-blue-200">
-                Connected to Me
-              </p>
-              <a 
-                href="mailto:aivideo7775@gmail.com"
-                className="text-blue-300 hover:text-white transition-colors"
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No projects found</h3>
+            <p className="text-gray-500 max-w-sm mx-auto">
+              {searchQuery ? 'Try adjusting your search terms' : 'Get started by creating your first project'}
+            </p>
+            {!searchQuery && isAdmin && (
+              <button
+                onClick={() => {
+                  setEditingProject(null);
+                  setFormData({ title: '', description: '', image_url: '', rar_file_url: '' });
+                  setShowAdminPanel(true);
+                }}
+                className="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors"
               >
-                aivideo7775@gmail.com
-              </a>
-            </div>
+                <Plus className="w-4 h-4" />
+                Create Project
+              </button>
+            )}
           </div>
-        </footer>
-      </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProjects.map((project) => (
+              <motion.div
+                key={project.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md hover:border-gray-300 transition-all duration-200 group"
+              >
+                {/* Project Image */}
+                <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200">
+                  {project.image_url ? (
+                    <img
+                      src={project.image_url}
+                      alt={project.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <ImageIcon className="w-12 h-12 text-gray-300" />
+                    </div>
+                  )}
+                  
+                  {/* Status Badge */}
+                  <div className="absolute top-3 left-3">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-medium text-gray-700 shadow-sm">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+                      Active
+                    </span>
+                  </div>
+
+                  {/* Admin Actions */}
+                  {isAdmin && (
+                    <div className="absolute top-3 right-3 flex gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingProject(project);
+                          setFormData({
+                            title: project.title,
+                            description: project.description,
+                            image_url: project.image_url,
+                            rar_file_url: project.rar_file_url
+                          });
+                          setShowAdminPanel(true);
+                        }}
+                        className="p-2 bg-white/90 backdrop-blur-sm rounded-lg text-gray-600 hover:text-gray-900 hover:bg-white transition-all shadow-sm"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(project.id);
+                        }}
+                        className="p-2 bg-white/90 backdrop-blur-sm rounded-lg text-red-500 hover:text-red-600 hover:bg-white transition-all shadow-sm"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Project Content */}
+                <div className="p-5">
+                  <h3 className="text-base font-semibold text-gray-900 mb-2 line-clamp-1">{project.title}</h3>
+                  <p className="text-sm text-gray-500 line-clamp-2 mb-4 min-h-[2.5rem]">{project.description}</p>
+                  
+                  <button
+                    onClick={() => {
+                      if (project.rar_file_url) {
+                        window.open(project.rar_file_url, '_blank');
+                      } else {
+                        alert('No RAR file available for this project');
+                      }
+                    }}
+                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors shadow-sm"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download Project
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-white border-t border-gray-200 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-gray-500">
+              © 2025 Wolf Trading. All rights reserved.
+            </p>
+            <a 
+              href="mailto:aivideo7775@gmail.com"
+              className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
+            >
+              aivideo7775@gmail.com
+            </a>
+          </div>
+        </div>
+      </footer>
 
       {/* Admin Panel Modal */}
       {showAdminPanel && (
@@ -350,7 +493,7 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                   required
                 />
               </div>
@@ -362,7 +505,7 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description:e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                   rows={3}
                 />
               </div>
@@ -375,10 +518,10 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
                   type="file"
                   id="image-file"
                   accept="image/*"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                 />
                 {uploadingImage && (
-                  <p className="text-sm text-blue-600 mt-1">Uploading image...</p>
+                  <p className="text-sm text-gray-500 mt-1">Uploading image...</p>
                 )}
               </div>
 
@@ -390,10 +533,10 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
                   type="file"
                   id="rar-file"
                   accept=".rar"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                 />
                 {uploadingRar && (
-                  <p className="text-sm text-blue-600 mt-1">Uploading RAR file...</p>
+                  <p className="text-sm text-gray-500 mt-1">Uploading RAR file...</p>
                 )}
               </div>
 
@@ -408,7 +551,7 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
                 <button
                   type="submit"
                   disabled={uploadingImage || uploadingRar}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
                 >
                   {editingProject ? 'Update' : 'Create'}
                 </button>
@@ -423,22 +566,16 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
           className={`fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 ${
             notification.type === 'success' 
-              ? 'bg-green-500 text-white' 
+              ? 'bg-gray-900 text-white' 
               : 'bg-red-500 text-white'
           }`}
         >
           {notification.message}
         </motion.div>
       )}
-
-      <style jsx global>{`
-        @keyframes gridMove {
-          0% { transform: translate(0, 0); }
-          100% { transform: translate(50px, 50px); }
-        }
-      `}</style>
     </div>
   );
 }
