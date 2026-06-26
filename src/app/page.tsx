@@ -12,29 +12,30 @@ import {
   ArrowRight,
   Menu,
   X,
-  Moon,
-  Sun
+  Twitter,
+  Linkedin,
+  Mail,
+  CheckCircle2,
+  Star,
+  BarChart3,
+  Target,
+  Globe,
+  Lock,
+  Sparkles
 } from "lucide-react";
 import Link from "next/link";
 
 export default function Home() {
-  const [isDark, setIsDark] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const dark = localStorage.getItem("dark") === "true";
-    setIsDark(dark);
-    if (dark) {
-      document.documentElement.classList.add("dark");
-    }
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const toggleDark = () => {
-    const newDark = !isDark;
-    setIsDark(newDark);
-    localStorage.setItem("dark", String(newDark));
-    document.documentElement.classList.toggle("dark");
-  };
 
   const teamMembers = [
     {
@@ -101,51 +102,39 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-wolf-50 via-white to-wolf-100 dark:from-wolf-950 dark:via-wolf-900 dark:to-wolf-950">
+    <div className="min-h-screen bg-[#0B1120]">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-wolf-950/80 backdrop-blur-lg border-b border-wolf-200 dark:border-wolf-800">
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-[#0B1120]/80 backdrop-blur-xl border-b border-white/10' : 'bg-transparent'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-gold-500 to-gold-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold texl-xl">W</span>
+          <div className="flex justify-between items-center h-20">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20">
+                <span className="text-white font-bold text-xl">W</span>
               </div>
-              <span className="font-display text-2xl font-bold text-wolf-900 dark:text-white">Wolf</span>
+              <span className="text-2xl font-bold text-white">Wolf</span>
             </div>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
-              <a href="#about" className="text-wolf-600 dark:text-wolf-400 hover:text-wolf-900 dark:hover:text-white transition-colors">About</a>
-              <a href="#achievements" className="text-wolf-600 dark:text-wolf-400 hover:text-wolf-900 dark:hover:text-white transition-colors">Achievements</a>
-              <a href="#benefits" className="text-wolf-600 dark:text-wolf-400 hover:text-wolf-900 dark:hover:text-white transition-colors">Benefits</a>
-              <a href="#projects" className="text-wolf-600 dark:text-wolf-400 hover:text-wolf-900 dark:hover:text-white transition-colors">Projects</a>
-              <button
-                onClick={toggleDark}
-                className="p-2 rounded-lg bg-wolf-100 dark:bg-wolf-800 text-wolf-600 dark:text-wolf-400 hover:bg-wolf-200 dark:hover:bg-wolf-700 transition-colors"
-              >
-                {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-              </button>
+              <a href="#about" className="text-gray-400 hover:text-white transition-colors">About</a>
+              <a href="#achievements" className="text-gray-400 hover:text-white transition-colors">Achievements</a>
+              <a href="#benefits" className="text-gray-400 hover:text-white transition-colors">Benefits</a>
+              <a href="#projects" className="text-gray-400 hover:text-white transition-colors">Projects</a>
               <Link
                 href="/register"
-                className="px-6 py-2 bg-gradient-to-r from-gold-500 to-gold-600 text-white font-semibold rounded-lg hover:from-gold-600 hover:to-gold-700 transition-all shadow-lg hover:shadow-xl"
+                className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold rounded-xl hover:from-amber-600 hover:to-orange-700 transition-all shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30"
               >
                 Join Our Team
               </Link>
             </div>
 
             {/* Mobile Menu Button */}
-            <div className="md:hidden flex items-center space-x-2">
-              <button
-                onClick={toggleDark}
-                className="p-2 rounded-lg bg-wolf-100 dark:bg-wolf-800 text-wolf-600 dark:text-wolf-400"
-              >
-                {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-              </button>
+            <div className="md:hidden">
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 rounded-lg bg-wolf-100 dark:bg-wolf-800 text-wolf-600 dark:text-wolf-400"
+                className="p-2 rounded-xl bg-white/10 text-white hover:bg-white/20 transition-colors"
               >
-                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
             </div>
           </div>
@@ -156,15 +145,15 @@ export default function Home() {
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="md:hidden bg-white dark:bg-wolf-950 border-t border-wolf-200 dark:border-wolf-800 px-4 py-4 space-y-4"
+            className="md:hidden bg-[#0B1120]/95 backdrop-blur-xl border-t border-white/10 px-4 py-6 space-y-4"
           >
-            <a href="#about" className="block text-wolf-600 dark:text-wolf-400 hover:text-wolf-900 dark:hover:text-white">About</a>
-            <a href="#achievements" className="block text-wolf-600 dark:text-wolf-400 hover:text-wolf-900 dark:hover:text-white">Achievements</a>
-            <a href="#benefits" className="block text-wolf-600 dark:text-wolf-400 hover:text-wolf-900 dark:hover:text-white">Benefits</a>
-            <a href="#projects" className="block text-wolf-600 dark:text-wolf-400 hover:text-wolf-900 dark:hover:text-white">Projects</a>
+            <a href="#about" className="block text-gray-400 hover:text-white transition-colors py-2">About</a>
+            <a href="#achievements" className="block text-gray-400 hover:text-white transition-colors py-2">Achievements</a>
+            <a href="#benefits" className="block text-gray-400 hover:text-white transition-colors py-2">Benefits</a>
+            <a href="#projects" className="block text-gray-400 hover:text-white transition-colors py-2">Projects</a>
             <Link
               href="/register"
-              className="block w-full px-6 py-3 bg-gradient-to-r from-gold-500 to-gold-600 text-white font-semibold rounded-lg text-center"
+              className="block w-full px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold rounded-xl text-center"
             >
               Join Our Team
             </Link>
@@ -173,34 +162,59 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <section className="min-h-screen flex items-center justify-center relative overflow-hidden px-4 sm:px-6 lg:px-8">
+        {/* Background Effects */}
+        <div className="absolute inset-0">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '12s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-amber-600/5 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '10s' }} />
+        </div>
+
+        {/* Grid Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `
+              linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
+            `,
+            backgroundSize: '60px 60px'
+          }} />
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10 pt-20">
+          <div className="grid lg:grid-cols-2 gap-16 items-center center">
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
+              transition={{ duration: 0.8 }}
             >
-              <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold text-wolf-900 dark:text-white mb-6 leading-tight">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 mb-6">
+                <Sparkles className="w-4 h-4 text-amber-400" />
+                <span className="text-sm text-gray-300">Premium Trading Platform</span>
+              </div>
+              
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
                 Trade with the
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-gold-500 to-gold-600">
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">
                   Wolf Pack
                 </span>
               </h1>
-              <p className="text-lg md:text-xl text-wolf-600 dark:text-wolf-400 mb-8 leading-relaxed">
+              
+              <p className="text-lg md:text-xl text-gray-400 mb-8 leading-relaxed max-w-xl">
                 Our team is a trading team composed of three trading experts. Each member possesses unique trading skills and has more than five years of professional experience. We are based in the United States and provide professional market analysis, trading strategies, and investment insights.
               </p>
+              
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
                   href="/register"
-                  className="px-8 py-4 bg-gradient-to-r from-gold-500 to-gold-600 text-white font-semibold rounded-lg hover:from-gold-600 hover:to-gold-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
+                  className="px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold rounded-xl hover:from-amber-600 hover:to-orange-700 transition-all shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50 flex items-center justify-center space-x-2 group"
                 >
                   <span>Join Our Team</span>
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <a
                   href="#about"
-                  className="px-8 py-4 border-2 border-wolf-300 dark:border-wolf-700 text-wolf-700 dark:text-wolf-300 font-semibold rounded-lg hover:bg-wolf-100 dark:hover:bg-wolf-800 transition-all flex items-center justify-center"
+                  className="px-8 py-4 border border-white/20 text-white font-semibold rounded-xl hover:bg-white/10 transition-all flex items-center justify-center backdrop-blur-sm"
                 >
                   Learn More
                 </a>
@@ -210,42 +224,56 @@ export default function Home() {
             <motion.div
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
               className="relative"
             >
-              <div className="relative z-10 bg-gradient-to-br from-wolf-200 to-wolf-300 dark:from-wolf-800 dark:to-wolf-900 rounded-2xl p-8 shadow-2xl">
+              <div className="relative z-10 bg-white/5 backdrop-blur-xl rounded-3xl p-8 border border-white/10 shadow-2xl">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-white dark:bg-wolf-950 rounded-xl p-6 shadow-lg">
-                    <TrendingUp className="w-8 h-8 text-gold-500 mb-2" />
-                    <p className="text-2xl font-bold text-wolf-900 dark:text-white">+127%</p>
-                    <p className="text-sm text-wolf-600 dark:text-wolf-400">Avg Returns</p>
+                  <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:bg-white/15 transition-all hover:scale-105">
+                    <TrendingUp className="w-8 h-8 text-amber-400 mb-3" />
+                    <p className="text-3xl font-bold text-white mb-1">+127%</p>
+                    <p className="text-sm text-gray-400">Avg Returns</p>
                   </div>
-                  <div className="bg-white dark:bg-wolf-950 rounded-xl p-6 shadow-lg">
-                    <Users className="w-8 h-8 text-gold-500 mb-2" />
-                    <p className="text-2xl font-bold text-wolf-900 dark:text-white">500+</p>
-                    <p className="text-sm text-wolf-600 dark:text-wolf-400">Members</p>
+                  <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:bg-white/15 transition-all hover:scale-105">
+                    <Users className="w-8 h-8 text-amber-400 mb-3" />
+                    <p className="text-3xl font-bold text-white mb-1">500+</p>
+                    <p className="text-sm text-gray-400">Members</p>
                   </div>
-                  <div className="bg-white dark:bg-wolf-950 rounded-xl p-6 shadow-lg">
-                    <Award className="w-8 h-8 text-gold-500 mb-2" />
-                    <p className="text-2xl font-bold text-wolf-900 dark:text-white">95%</p>
-                    <p className="text-sm text-wolf-600 dark:text-wolf-400">Success Rate</p>
+                  <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:bg-white/15 transition-all hover:scale-105">
+                    <Award className="w-8 h-8 text-amber-400 mb-3" />
+                    <p className="text-3xl font-bold text-white mb-1">95%</p>
+                    <p className="text-sm text-gray-400">Success Rate</p>
                   </div>
-                  <div className="bg-white dark:bg-wolf-950 rounded-xl p-6 shadow-lg">
-                    <Shield className="w-8 h-8 text-gold-500 mb-2" />
-                    <p className="text-2xl font-bold text-wolf-900 dark:text-white">24/7</p>
-                    <p className="text-sm text-wolf-600 dark:text-wolf-400">Support</p>
+                  <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:bg-white/15 transition-all hover:scale-105">
+                    <Shield className="w-8 h-8 text-amber-400 mb-3" />
+                    <p className="text-3xl font-bold text-white mb-1">24/7</p>
+                    <p className="text-sm text-gray-400">Support</p>
                   </div>
                 </div>
               </div>
-              <div className="absolute -top-4 -right-4 w-24 h-24 bg-gold-500/20 rounded-full blur-2xl" />
-              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-gold-500/10 rounded-full blur-3xl" />
+              
+              {/* Floating Elements */}
+              <motion.div
+                animate={{ y: [0, -20, 0] }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -top-8 -right-8 w-20 h-20 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/30"
+              >
+                <BarChart3 className="w-10 h-10 text-white" />
+              </motion.div>
+              <motion.div
+                animate={{ y: [0, 20, 0] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -bottom-8 -left-8 w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/30"
+              >
+                <Target className="w-8 h-8 text-white" />
+              </motion.div>
             </motion.div>
           </div>
         </div>
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-wolf-900">
+      <section id="about" className="py-32 px-4 sm:px-6 lg:px-8 relative">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -253,10 +281,10 @@ export default function Home() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="font-display text-4xl md:text-5xl font-bold text-wolf-900 dark:text-white mb-4">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
               Meet Our Experts
             </h2>
-            <p className="text-lg text-wolf-600 dark:text-wolf-400 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
               Our team of seasoned trading professionals brings decades of combined experience to help you succeed in the markets.
             </p>
           </motion.div>
@@ -269,22 +297,33 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-gradient-to-br from-wolf-50 to-wolf-100 dark:from-wolf-800 dark:to-wolf-900 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-wolf-200 dark:border-wolf-700"
+                whileHover={{ y: -8 }}
+                className="bg-white/5 backdrop-blur-xl rounded-3xl p-8 border border-white/10 hover:border-amber-500/30 transition-all group"
               >
-                <div className="w-20 h-20 bg-gradient-to-br from-gold-500 to-gold-600 rounded-full flex items-center justify-center text-4xl mb-6">
+                <div className="w-24 h-24 bg-gradient-to-br from-amber-500 to-orange-600 rounded-full flex items-center justify-center text-5xl mb-6 mx-auto shadow-lg shadow-amber-500/20 group-hover:shadow-amber-500/40 transition-shadow">
                   {member.image}
                 </div>
-                <h3 className="font-display text-2xl font-bold text-wolf-900 dark:text-white mb-2">
+                <h3 className="text-2xl font-bold text-white mb-2 text-center">
                   {member.name}
                 </h3>
-                <p className="text-gold-600 font-semibold mb-4">{member.role}</p>
-                <div className="space-y-2">
-                  <p className="text-wolf-600 dark:text-wolf-400">
-                    <span className="font-semibold">Experience:</span> {member.experience}
-                  </p>
-                  <p className="text-wolf-600 dark:text-wolf-400">
-                    <span className="font-semibold">Expertise:</span> {member.expertise}
-                  </p>
+                <p className="text-amber-400 font-semibold mb-4 text-center">{member.role}</p>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <Star className="w-4 h-4 text-amber-400" />
+                    <span className="text-sm"><span className="font-semibold text-white">Experience:</span> {member.experience}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <Target className="w-4 h-4 text-amber-400" />
+                    <span className="text-sm"><span className="font-semibold text-white">Expertise:</span> {member.expertise}</span>
+                  </div>
+                </div>
+                <div className="mt-6 flex justify-center gap-3">
+                  <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-gray-400 hover:bg-amber-500 hover:text-white transition-all">
+                    <Twitter className="w-4 h-4" />
+                  </a>
+                  <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-gray-400 hover:bg-amber-500 hover:text-white transition-all">
+                    <Linkedin className="w-4 h-4" />
+                  </a>
                 </div>
               </motion.div>
             ))}
@@ -293,18 +332,21 @@ export default function Home() {
       </section>
 
       {/* Achievements Section */}
-      <section id="achievements" className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+      <section id="achievements" className="py-32 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        {/* Background Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-amber-500/5 to-transparent" />
+        
+        <div className="max-w-7xl mx-auto relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="font-display text-4xl md:text-5xl font-bold text-wolf-900 dark:text-white mb-4">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
               Our Achievements
             </h2>
-            <p className="text-lg text-wolf-600 dark:text-wolf-400 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
               Proven results that speak for themselves
             </p>
           </motion.div>
@@ -317,12 +359,13 @@ export default function Home() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="text-center"
+                whileHover={{ scale: 1.05 }}
+                className="text-center group"
               >
-                <div className="w-20 h-20 bg-gradient-to-br from-gold-500 to-gold-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                  <span className="text-3xl font-bold text-white">{achievement.value}</span>
+                <div className="w-28 h-28 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-amber-500/30 group-hover:shadow-amber-500/50 transition-all">
+                  <span className="text-4xl font-bold text-white">{achievement.value}</span>
                 </div>
-                <p className="text-wolf-900 dark:text-white font-semibold">{achievement.label}</p>
+                <p className="text-white font-semibold text-lg">{achievement.label}</p>
               </motion.div>
             ))}
           </div>
@@ -330,7 +373,7 @@ export default function Home() {
       </section>
 
       {/* Benefits Section */}
-      <section id="benefits" className="py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-wolf-900">
+      <section id="benefits" className="py-32 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -338,15 +381,15 @@ export default function Home() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="font-display text-4xl md:text-5xl font-bold text-wolf-900 dark:text-white mb-4">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
               Why Join Us
             </h2>
-            <p className="text-lg text-wolf-600 dark:text-wolf-400 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
               Discover the advantages of becoming part of our exclusive trading community
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {benefits.map((benefit, index) => (
               <motion.div
                 key={index}
@@ -354,15 +397,16 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-gradient-to-br from-wolf-50 to-wolf-100 dark:from-wolf-800 dark:to-wolf-900 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-wolf-200 dark:border-wolf-700 group"
+                whileHover={{ y: -4, scale: 1.02 }}
+                className="bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/10 hover:border-amber-500/30 transition-all group"
               >
-                <div className="w-14 h-14 bg-gradient-to-br from-gold-500 to-gold-600 rounded-xl flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform">
+                <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform shadow-lg shadow-amber-500/20">
                   {benefit.icon}
                 </div>
-                <h3 className="font-display text-xl font-bold text-wolf-900 dark:text-white mb-3">
+                <h3 className="text-xl font-bold text-white mb-3">
                   {benefit.title}
                 </h3>
-                <p className="text-wolf-600 dark:text-wolf-400 leading-relaxed">
+                <p className="text-gray-400 leading-relaxed">
                   {benefit.description}
                 </p>
               </motion.div>
@@ -377,62 +421,83 @@ export default function Home() {
           >
             <Link
               href="/register"
-              className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-gold-500 to-gold-600 text-white font-semibold rounded-lg hover:from-gold-600 hover:to-gold-700 transition-all shadow-lg hover:shadow-xl"
+              className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold rounded-xl hover:from-amber-600 hover:to-orange-700 transition-all shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50 group"
             >
               <span>Join Our Team Today</span>
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
           </motion.div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-wolf-900 dark:bg-black py-16 px-4 sm:px-6 lg:px-8">
+      <footer className="bg-[#0a0f1c] border-t border-white/10 py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-4 gap-12 mb-12">
             <div className="md:col-span-2">
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-gold-500 to-gold-600 rounded-lg flex items-center justify-center">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20">
                   <span className="text-white font-bold text-xl">W</span>
                 </div>
-                <span className="font-display text-2xl font-bold text-white">Wolf</span>
+                <span className="text-2xl font-bold text-white">Wolf</span>
               </div>
-              <p className="text-wolf-400 mb-6 max-w-md">
+              <p className="text-gray-400 mb-6 max-w-md">
                 Professional trading team providing expert market analysis, trading strategies, and investment insights.
               </p>
               <div className="flex space-x-4">
-                <a href="#" className="w-10 h-10 bg-wolf-800 rounded-lg flex items-center justify-center text-wolf-400 hover:bg-gold-500 hover:text-white transition-colors">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg>
+                <a href="#" className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-gray-400 hover:bg-amber-500 hover:text-white transition-all">
+                  <Twitter className="w-5 h-5" />
                 </a>
-                <a href="#" className="w-10 h-10 bg-wolf-800 rounded-lg flex items-center justify-center text-wolf-400 hover:bg-gold-500 hover:text-white transition-colors">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                <a href="#" className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-gray-400 hover:bg-amber-500 hover:text-white transition-all">
+                  <Linkedin className="w-5 h-5" />
+                </a>
+                <a href="mailto:aivideo7775@gmail.com" className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-gray-400 hover:bg-amber-500 hover:text-white transition-all">
+                  <Mail className="w-5 h-5" />
                 </a>
               </div>
             </div>
 
             <div>
               <h4 className="font-semibold text-white mb-4">Quick Links</h4>
-              <ul className="space-y-2">
-                <li><a href="#" className="text-wolf-400 hover:text-gold-500 transition-colors">Home</a></li>
-                <li><a href="#about" className="text-wolf-400 hover:text-gold-500 transition-colors">About</a></li>
-                <li><a href="#achievements" className="text-wolf-400 hover:text-gold-500 transition-colors">Achievements</a></li>
-                <li><a href="#benefits" className="text-wolf-400 hover:text-gold-500 transition-colors">Benefits</a></li>
+              <ul className="space-y-3">
+                <li><a href="#" className="text-gray-400 hover:text-amber-400 transition-colors">Home</a></li>
+                <li><a href="#about" className="text-gray-400 hover:text-amber-400 transition-colors">About</a></li>
+                <li><a href="#achievements" className="text-gray-400 hover:text-amber-400 transition-colors">Achievements</a></li>
+                <li><a href="#benefits" className="text-gray-400 hover:text-amber-400 transition-colors">Benefits</a></li>
               </ul>
             </div>
 
             <div>
               <h4 className="font-semibold text-white mb-4">Legal</h4>
-              <ul className="space-y-2">
-                <li><a href="#" className="text-wolf-400 hover:text-gold-500 transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="text-wolf-400 hover:text-gold-500 transition-colors">Terms of Service</a></li>
-                <li><a href="#" className="text-wolf-400 hover:text-gold-500 transition-colors">Contact Us</a></li>
+              <ul className="space-y-3">
+                <li><a href="#" className="text-gray-400 hover:text-amber-400 transition-colors">Privacy Policy</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-amber-400 transition-colors">Terms of Service</a></li>
+                <li><a href="mailto:aivideo7775@gmail.com" className="text-gray-400 hover:text-amber-400 transition-colors">Contact Us</a></li>
               </ul>
             </div>
           </div>
 
-          <div className="border-t border-wolf-800 pt-8 text-center">
-            <p className="text-wolf-500">
-              © 2024 Wolf Trading. All rights reserved.
+          {/* Newsletter */}
+          <div className="border-t border-white/10 pt-8 mb-8">
+            <div className="max-w-md mx-auto text-center">
+              <h4 className="font-semibold text-white mb-2">Stay Updated</h4>
+              <p className="text-gray-400 text-sm mb-4">Subscribe to our newsletter for trading insights</p>
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  className="flex-1 px-4 py-2 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 transition-colors"
+                />
+                <button className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold rounded-xl hover:from-amber-600 hover:to-orange-700 transition-all">
+                  Subscribe
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-white/10 pt-8 text-center">
+            <p className="text-gray-500">
+              © 2025 Wolf Trading. All rights reserved.
             </p>
           </div>
         </div>
