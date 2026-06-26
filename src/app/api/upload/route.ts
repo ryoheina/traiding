@@ -32,9 +32,13 @@ export async function POST(request: NextRequest) {
     
     console.log('[UPLOAD] File size:', buffer.length, 'bytes');
     
-    // Create upload directory if it doesn't exist
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', type);
+    // Use Railway volume for persistent storage
+    // Railway mounts volumes to /data directory
+    const baseDir = process.env.RAILWAY_VOLUME_MOUNT_PATH || process.cwd();
+    const uploadDir = path.join(baseDir, 'uploads', type);
+    
     console.log('[UPLOAD] Upload directory:', uploadDir);
+    console.log('[UPLOAD] Base directory:', baseDir);
     console.log('[UPLOAD] Directory exists before:', existsSync(uploadDir));
     
     if (!existsSync(uploadDir)) {

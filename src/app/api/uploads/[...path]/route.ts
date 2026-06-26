@@ -12,8 +12,12 @@ export async function GET(
   try {
     const filePath = params.path.join('/');
     
+    // Use Railway volume for persistent storage
+    const baseDir = process.env.RAILWAY_VOLUME_MOUNT_PATH || process.cwd();
+    
     // Try multiple possible paths
     const possiblePaths = [
+      path.join(baseDir, 'uploads', filePath),
       path.join(process.cwd(), 'public', 'uploads', filePath),
       path.join(process.cwd(), 'uploads', filePath),
       path.join(process.cwd(), '.next', 'public', 'uploads', filePath),
