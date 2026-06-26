@@ -32,8 +32,8 @@ export async function POST(request: NextRequest) {
     
     console.log('[UPLOAD] File size:', buffer.length, 'bytes');
     
-    // Create upload directory if it doesn't exist
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', type);
+    // Create upload directory if it doesn't exist - use root uploads directory
+    const uploadDir = path.join(process.cwd(), 'uploads', type);
     console.log('[UPLOAD] Upload directory:', uploadDir);
     console.log('[UPLOAD] Directory exists before:', existsSync(uploadDir));
     
