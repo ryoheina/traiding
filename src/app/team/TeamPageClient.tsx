@@ -282,7 +282,20 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
                   </div>
                   <div className="p-4">
                     <h3 className="text-lg font-semibold text-white mb-2">{project.title}</h3>
-                    <p className="text-blue-200 text-sm line-clamp-2">{project.description}</p>
+                    <p className="text-blue-200 text-sm line-clamp-2 mb-4">{project.description}</p>
+                    <button
+                      onClick={() => {
+                        if (project.rar_file_url) {
+                          window.open(project.rar_file_url, '_blank');
+                        } else {
+                          alert('No RAR file available for this project');
+                        }
+                      }}
+                      className="w-full bg-white text-blue-900 py-2 px-4 rounded-lg font-semibold hover:bg-blue-100 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <FileArchive className="w-5 h-5" />
+                      Download RAR File
+                    </button>
                   </div>
                 </motion.div>
               ))}
