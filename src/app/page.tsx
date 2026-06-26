@@ -447,9 +447,13 @@ export default function Home() {
                   <div 
                     className="relative h-48 bg-gradient-to-br from-gold-400 to-gold-600 cursor-pointer group"
                     onClick={() => {
+                      console.log('[DOWNLOAD] Click detected on project:', project.title);
+                      console.log('[DOWNLOAD] rar_file_url:', project.rar_file_url);
                       if (project.rar_file_url) {
                         console.log('[DOWNLOAD] Opening download URL:', project.rar_file_url);
                         window.open(project.rar_file_url, '_blank');
+                      } else {
+                        console.log('[DOWNLOAD] No rar_file_url set for this project');
                       }
                     }}
                   >
