@@ -12,8 +12,12 @@ export async function GET(
   try {
     const filePath = params.path.join('/');
     
-    // Use Railway volume for persistent storage
-    const baseDir = process.env.RAILWAY_VOLUME_MOUNT_PATH || process.cwd();
+    // Use persistent storage for deployment platforms
+    // Render: mounts persistent disks to /var/lib/data
+    // Railway: mounts volumes to /data
+    const baseDir = process.env.RENDER_PERSISTENT_DISK_PATH || 
+                   process.env.RAILWAY_VOLUME_MOUNT_PATH || 
+                   process.cwd();
     
     // Try multiple possible paths
     const possiblePaths = [
