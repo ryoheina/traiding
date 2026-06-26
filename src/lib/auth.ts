@@ -55,6 +55,34 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   callbacks: {
+    async signIn({ user, account, profile }) {
+      if (account?.provider === 'google') {
+        try {
+          // Check if user exists
+          const result = await query(
+            'SELECT id, email, approval_status FROM users WHERE email = $1',
+            [user.email?.toLowerCase()]
+          );
+
+          if (result.rows.length === 0) {
+            // Create new user with Google data
+            const newUser = await query(
+              `INSERT INTO users (full_name, email, password_hash, approval_status)
+               VALUES ($1, $2, $3, $4)
+               RETURNING id, email, approval_status`,
+              [user.name || 'Google User', user.email?.toLowerCase(), '', 'pending']
+            );
+            console.log('[AUTH] Created new Google user:', newUser.rows[0]);
+          } else {
+            console.log('[AUTH] Existing Google user found:', result.rows[0]);
+          }
+        } catch (error) {
+          console.error('[AUTH] Google sign-in error:', error);
+          return false;
+        }
+      }
+      return true;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
