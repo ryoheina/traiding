@@ -460,6 +460,7 @@ export default function Home() {
                   <div className="p-6">
                     <h3 className="text-xl font-bold text-wolf-900 dark:text-white mb-2">{project.title}</h3>
                     <p className="text-wolf-600 dark:text-wolf-400 text-sm line-clamp-2 mb-4">{project.description}</p>
+                    <div className="text-red-500 text-xs mb-2">DEPLOYMENT TEST - NEW CODE</div>
                     {console.log('[PROJECT DATA]', { title: project.title, rar_file_url: project.rar_file_url })}
                     {project.rar_file_url && (
                       <button
