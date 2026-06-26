@@ -444,19 +444,7 @@ export default function Home() {
                   viewport={{ once: true }}
                   className="bg-white dark:bg-wolf-900 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow border border-wolf-200 dark:border-wolf-800"
                 >
-                  <div 
-                    className="relative h-48 bg-gradient-to-br from-gold-400 to-gold-600 cursor-pointer group"
-                    onClick={() => {
-                      console.log('[DOWNLOAD] Click detected on project:', project.title);
-                      console.log('[DOWNLOAD] rar_file_url:', project.rar_file_url);
-                      if (project.rar_file_url) {
-                        console.log('[DOWNLOAD] Opening download URL:', project.rar_file_url);
-                        window.open(project.rar_file_url, '_blank');
-                      } else {
-                        console.log('[DOWNLOAD] No rar_file_url set for this project');
-                      }
-                    }}
-                  >
+                  <div className="relative h-48 bg-gradient-to-br from-gold-400 to-gold-600">
                     {project.image_url ? (
                       <img
                         src={project.image_url}
@@ -468,16 +456,22 @@ export default function Home() {
                         <ImageIcon className="w-16 h-16 text-white/50" />
                       </div>
                     )}
-                    {project.rar_file_url && (
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <FileArchive className="w-12 h-12 text-white" />
-                        <span className="ml-2 text-white font-semibold">Click to Download</span>
-                      </div>
-                    )}
                   </div>
                   <div className="p-6">
                     <h3 className="text-xl font-bold text-wolf-900 dark:text-white mb-2">{project.title}</h3>
-                    <p className="text-wolf-600 dark:text-wolf-400 text-sm line-clamp-2">{project.description}</p>
+                    <p className="text-wolf-600 dark:text-wolf-400 text-sm line-clamp-2 mb-4">{project.description}</p>
+                    {project.rar_file_url && (
+                      <button
+                        onClick={() => {
+                          console.log('[DOWNLOAD] Download button clicked for:', project.title);
+                          window.open(project.rar_file_url, '_blank');
+                        }}
+                        className="w-full bg-wolf-900 dark:bg-wolf-100 text-white dark:text-wolf-900 py-2 px-4 rounded-lg font-semibold hover:bg-wolf-800 dark:hover:bg-wolf-200 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <FileArchive className="w-5 h-5" />
+                        Download RAR File
+                      </button>
+                    )}
                   </div>
                 </motion.div>
               ))}
