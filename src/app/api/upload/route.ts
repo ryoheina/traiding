@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     
     console.log('[UPLOAD] File size:', buffer.length, 'bytes');
     
-    // Create upload directory if it doesn't exist - use public/uploads for Next.js static serving
+    // Create upload directory if it doesn't exist
     const uploadDir = path.join(process.cwd(), 'public', 'uploads', type);
     console.log('[UPLOAD] Upload directory:', uploadDir);
     console.log('[UPLOAD] Directory exists before:', existsSync(uploadDir));
@@ -63,8 +63,8 @@ export async function POST(request: NextRequest) {
     
     console.log('[UPLOAD] File verified to exist:', existsSync(filepath));
     
-    // Return public URL - use /uploads/ for static file serving
-    const fileUrl = `/uploads/${type}/${filename}`;
+    // Return public URL - use relative URL to work with any domain
+    const fileUrl = `/api/uploads/${type}/${filename}`;
     
     console.log('[UPLOAD] File uploaded successfully:', { filename, type, fileUrl, filepath });
     

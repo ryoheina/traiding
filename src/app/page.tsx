@@ -446,39 +446,10 @@ export default function Home() {
                 >
                   <div 
                     className="relative h-48 bg-gradient-to-br from-gold-400 to-gold-600 cursor-pointer group"
-                    onClick={async () => {
+                    onClick={() => {
                       if (project.rar_file_url) {
-                        console.log('[DOWNLOAD] Attempting to download:', project.rar_file_url);
-                        try {
-                          // Fetch the file as blob
-                          const response = await fetch(project.rar_file_url);
-                          console.log('[DOWNLOAD] Response status:', response.status);
-                          
-                          if (!response.ok) {
-                            console.error('[DOWNLOAD] Failed to fetch file:', response.status);
-                            alert('Failed to download file');
-                            return;
-                          }
-                          
-                          const blob = await response.blob();
-                          console.log('[DOWNLOAD] Blob size:', blob.size);
-                          
-                          // Create download link
-                          const url = window.URL.createObjectURL(blob);
-                          const link = document.createElement('a');
-                          link.href = url;
-                          const filename = project.rar_file_url.split('/').pop() || 'download.rar';
-                          link.download = filename;
-                          document.body.appendChild(link);
-                          link.click();
-                          document.body.removeChild(link);
-                          window.URL.revokeObjectURL(url);
-                          
-                          console.log('[DOWNLOAD] Download triggered');
-                        } catch (error) {
-                          console.error('[DOWNLOAD] Error:', error);
-                          alert('Failed to download file');
-                        }
+                        console.log('[DOWNLOAD] Opening download URL:', project.rar_file_url);
+                        window.open(project.rar_file_url, '_blank');
                       }
                     }}
                   >

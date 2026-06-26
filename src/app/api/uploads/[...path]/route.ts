@@ -12,7 +12,7 @@ export async function GET(
   try {
     const filePath = params.path.join('/');
     
-    // Try multiple possible paths - prioritize public/uploads for Next.js static serving
+    // Try multiple possible paths
     const possiblePaths = [
       path.join(process.cwd(), 'public', 'uploads', filePath),
       path.join(process.cwd(), 'uploads', filePath),
