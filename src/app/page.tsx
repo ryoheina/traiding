@@ -460,6 +460,7 @@ export default function Home() {
                   <div className="p-6">
                     <h3 className="text-xl font-bold text-wolf-900 dark:text-white mb-2">{project.title}</h3>
                     <p className="text-wolf-600 dark:text-wolf-400 text-sm line-clamp-2 mb-4">{project.description}</p>
+                    {console.log('[PROJECT DATA]', { title: project.title, rar_file_url: project.rar_file_url })}
                     {project.rar_file_url && (
                       <button
                         onClick={() => {
@@ -471,6 +472,9 @@ export default function Home() {
                         <FileArchive className="w-5 h-5" />
                         Download RAR File
                       </button>
+                    )}
+                    {!project.rar_file_url && (
+                      <p className="text-sm text-gray-500 italic">No download file available</p>
                     )}
                   </div>
                 </motion.div>
