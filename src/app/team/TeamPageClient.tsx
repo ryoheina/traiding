@@ -409,7 +409,7 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
                 className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md hover:border-gray-300 transition-all duration-200 group"
               >
                 {/* Project Image Carousel */}
-                <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200">
+                <div className="relative h-64 bg-gradient-to-br from-gray-100 to-gray-200">
                   {project.images && project.images.length > 0 ? (
                     <>
                       <img
