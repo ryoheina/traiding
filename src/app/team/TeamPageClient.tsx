@@ -294,7 +294,7 @@ export default function TeamPageClient({ isAdmin, userEmail }: TeamPageClientPro
                       className="w-full bg-white text-blue-900 py-2 px-4 rounded-lg font-semibold hover:bg-blue-100 transition-colors flex items-center justify-center gap-2"
                     >
                       <FileArchive className="w-5 h-5" />
-                      Download RAR File
+                      Download Project
                     </button>
                   </div>
                 </motion.div>
